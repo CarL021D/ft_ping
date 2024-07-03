@@ -9,7 +9,7 @@
 #include <time.h>
 #include <errno.h>
 
-#define PING_PKT_SIZE 64
+#define TTL_VALUE 64
 #define PING_SLEEP_RATE 1000000
 
 // Checksum function to ensure no packet's alteration
@@ -28,31 +28,40 @@ unsigned short checksum(void *b, int len) {
     return result;
 }
 
-// Function to send and receive ping
-void ping(int ping_sockfd, struct sockaddr_in *ping_addr, const char *ping_ip) {
+uint16_t print_received_ttl(int sockfd) {
+    uint16_t received_ttl;
+    socklen_t ttl_len = sizeof(received_ttl);
+    if (getsockopt(sockfd, IPPROTO_IP, IP_TTL, &received_ttl, &ttl_len) != 0) {
+        perror("getsockopt");
+        exit(EXIT_FAILURE);
+    }
+    return received_ttl;
+}
+
+
+void ping(int sockfd, struct sockaddr_in *ping_addr, const char *ping_ip, int32_t count) {
+    
     struct icmp pckt;
     struct timespec time_start, time_end;
     long double rtt_msec = 0;
 
-    // Packet preparation
     memset(&pckt, 0, sizeof(pckt));
     pckt.icmp_type = ICMP_ECHO;
     pckt.icmp_code = 0;
     pckt.icmp_cksum = 0;
-    pckt.icmp_seq = 0;
     pckt.icmp_id = getpid();
     
     pckt.icmp_cksum = checksum(&pckt, sizeof(pckt));
 
     clock_gettime(CLOCK_MONOTONIC, &time_start);
 
-    if (sendto(ping_sockfd, &pckt, sizeof(pckt), 0, (struct sockaddr *)ping_addr, sizeof(*ping_addr)) <= 0) {
+    if (sendto(sockfd, &pckt, sizeof(pckt), 0, (struct sockaddr *)ping_addr, sizeof(*ping_addr)) <= 0) {
         perror("sendto");
         return;
     }
 
     socklen_t addr_len = sizeof(*ping_addr);
-    if (recvfrom(ping_sockfd, &pckt, sizeof(pckt), 0, (struct sockaddr *)ping_addr, &addr_len) <= 0) {
+    if (recvfrom(sockfd, &pckt, sizeof(pckt), 0, (struct sockaddr *)ping_addr, &addr_len) <= 0) {
         perror("recvfrom");
         return;
     }
@@ -62,18 +71,29 @@ void ping(int ping_sockfd, struct sockaddr_in *ping_addr, const char *ping_ip) {
     rtt_msec = (time_end.tv_sec - time_start.tv_sec) * 1000.0;
     rtt_msec += (time_end.tv_nsec - time_start.tv_nsec) / 1000000.0;
 
-    printf("Ping to %s: rtt = %Lf ms\n", ping_ip, rtt_msec);
+    uint16_t ttl_value = print_received_ttl(sockfd);
+
+    printf("64 bytes from %s: icmp_seq=%d ttl=%d time= %Lf ms\n", ping_ip, count, ttl_value, rtt_msec);
 }
 
-// Function to initialize ICMP socket
 int32_t init_icmp_socket() {
+    
     int32_t sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
     if (sockfd < 0) {
         perror("socket init error");
         return -1;
     }
+
+    int32_t ttl_value = TTL_VALUE;
+    if (setsockopt(sockfd, IPPROTO_IP, IP_TTL, &ttl_value, sizeof(TTL_VALUE)) < 0) {
+        perror("socket ttl init error");
+        close(sockfd);
+        return -1;
+    }
+
     return sockfd;
 }
+
 
 void init_sock_addr(struct sockaddr_in *addr_con, const char *ip_addr) {
 
@@ -83,22 +103,26 @@ void init_sock_addr(struct sockaddr_in *addr_con, const char *ip_addr) {
     addr_con->sin_addr.s_addr = inet_addr(ip_addr);
 }
 
+
+
 int main() {
-    int32_t sockfd;
+
+    int32_t sockfd, count = 0;
     struct sockaddr_in addr_con;
     const char *ip_addr = "127.0.0.1";
 
     if ((sockfd = init_icmp_socket()) < 0)
         exit(EXIT_FAILURE);
-    init_sock_addr(&addr_con, ip_addr);
     
+    init_sock_addr(&addr_con, ip_addr);
     printf("PING localhost (%s):\n", ip_addr);
+    
 
     while (1) {
-        ping(sockfd, &addr_con, ip_addr);
+        ping(sockfd, &addr_con, ip_addr, count);
         sleep(1);
+        count++;
     }
 
     close(sockfd);
-    return 0;
 }
