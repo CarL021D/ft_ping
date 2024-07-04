@@ -67,13 +67,11 @@ void ping(int sockfd, struct sockaddr_in *ping_addr, const char *ping_ip, int32_
     }
 
     clock_gettime(CLOCK_MONOTONIC, &time_end);
-
     rtt_msec = (time_end.tv_sec - time_start.tv_sec) * 1000.0;
     rtt_msec += (time_end.tv_nsec - time_start.tv_nsec) / 1000000.0;
 
     uint16_t ttl_value = print_received_ttl(sockfd);
-
-    printf("64 bytes from %s: icmp_seq=%d ttl=%d time= %Lf ms\n", ping_ip, count, ttl_value, rtt_msec);
+    printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3Lf ms\n", ping_ip, count, ttl_value, rtt_msec);
 }
 
 int32_t init_icmp_socket() {
