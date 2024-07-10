@@ -11,7 +11,7 @@ void	init_data(t_data *data, char **av) {
 		exit(EXIT_FAILURE);
 	}
 
-	if ((data.sockfd = init_icmp_socket()) < 0) {
+	if ((data->sockfd = init_icmp_socket()) < 0) {
 		
 		fprintf(stderr, "Failed to initialize socket\n");
 		exit(EXIT_FAILURE);
@@ -22,7 +22,7 @@ void	init_data(t_data *data, char **av) {
 	data->sequence = 0;
 }
 
-void init_sock_addr(struct sockaddr_in *addr_con, const char *ip_addr) {    
+void init_sock_addr(struct sockaddr_in *addr_con, char *ip_addr) {    
 	memset(addr_con, 0, sizeof(struct sockaddr_in));
 	addr_con->sin_family = AF_INET;
 	addr_con->sin_port = htons(0);

@@ -1,5 +1,6 @@
-#include "ft_ping.h"
-#include "ip_icmp.h"
+#include "../includes/ft_ping.h"
+#include "../includes/ip_icmp.h"
+#include "../includes/ip.h"
 
 #define TTL_VALUE 64
 #define PING_PKT_SIZE 64
@@ -21,16 +22,16 @@ unsigned short checksum(void *b, int len) {
 
 
 
-void send_pckt(t_data *data, t_icmp_pckt *pckt, struct sockaddr_in *addr_con, struct timespec *time_start) {
+void send_pckt(t_icmp_pckt *pckt, struct sockaddr_in *addr_con, t_data *data, struct timespec *time_start) {
 
 
 	// memcpy(buffer, &pckt_hdr, sizeof(pckt_hdr));
 	for (uint16_t i = 0; i < data->payload_size; ++i)
-		pck->payload[i] = rand() % 256;
+		pckt->payload[i] = rand() % 256;
 	
-	clock_gettime(CLOCK_MONOTONIC, &time_start);
+	clock_gettime(CLOCK_MONOTONIC, time_start);
 
-	pckt->(hdr.checksum) = checksum(&pckt->hdr, sizeof(*pckt));
+	pckt->hdr->checksum = checksum(&pckt->hdr, sizeof(*pckt));
 
 	if (sendto(data->sockfd, &pckt->hdr, sizeof(*pckt), 0,
 			   (struct sockaddr *)addr_con, sizeof(*addr_con)) <= 0) {
@@ -86,11 +87,12 @@ void send_pckt(t_data *data, t_icmp_pckt *pckt, struct sockaddr_in *addr_con, st
 
 
 
-void receive_pckt(t_data *data, t_icmp_pckt *pckt, struct sockaddr_in *addr_con, struct timespec *time_start) {
+void receive_pckt(t_icmp_pckt *pckt, struct sockaddr_in *addr_con, t_data *data, struct timespec *time_start) {
 	
 	char 				buffer[MAX_PACKET_SIZE];
 	socklen_t			addr_len = sizeof(*addr_con);
 	struct timespec		time_end;
+	static uint32_t		sequence = 0;
 
 	memset(buffer, 0, sizeof(buffer));
 
@@ -102,38 +104,23 @@ void receive_pckt(t_data *data, t_icmp_pckt *pckt, struct sockaddr_in *addr_con,
 	struct iphdr *ip_hdr = (struct iphdr *)buffer;
 	struct icmphdr *icmp_hdr = (struct icmphdr *)(buffer + (ip_hdr->ihl * 4));
 	unsigned char *payload = buffer + (ip_hdr->ihl * 4) + sizeof(struct icmphdr);
-	
-	if (icmp_hdr.type == ICMP_ECHO_REPLY) {
+	long double rtt_msec;
+
+
+	if (icmp_hdr->type == ICMP_ECHO_REPLY) {
 
 
 		clock_gettime(CLOCK_MONOTONIC, &time_end);
 
-		rtt_msec = (time_end.tv_sec - time_start.tv_sec) * 1000.0;
-		rtt_msec += (time_end.tv_nsec - time_start.tv_nsec) / 1000000.0;
+		rtt_msec = (time_end.tv_sec - time_start->tv_sec) * 1000.0;
+		rtt_msec += (time_end.tv_nsec - time_start->tv_nsec) / 1000000.0;
 	}
+
+	(void)pckt;
 
 	// uint16_t ttl_value = get_received_ttl(sockfd);
 	// sequence++;
 	// printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3Lf ms\n", ip_addr, sequence, ttl_value, rtt_msec);
-}
-
-
-int32_t init_icmp_socket() {   
-	
-	int32_t sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
-	if (sockfd < 0) {
-		perror("socket init error");
-		return -1;
-	}
-
-	int32_t ttl_value = TTL_VALUE;
-	if (setsockopt(sockfd, IPPROTO_IP, IP_TTL, &ttl_value, sizeof(ttl_value)) < 0) {
-		perror("setsockopt");
-		close(sockfd);
-		return -1;
-	}
-
-	return sockfd;
 }
 
 
@@ -162,13 +149,12 @@ int main(int ac, char **av) {
 	t_data				data;
 	t_icmp_pckt			icmp_pckt;
 	struct sockaddr_in	addr_con;
-	static uint32_t		sequence = 0;
 
 	(void)ac;
 
 
 	init_data(&data, av);
-	init_sock_addr(&addr_con, &(dataip_addr));
+	init_sock_addr(&addr_con, data.ip_addr);
 	printf("PING %s (%s): 56 data bytes\n", av[1], data.ip_addr);
 
 	while (1) {
@@ -177,8 +163,8 @@ int main(int ac, char **av) {
 
 		init_icmp_pckt(&icmp_pckt);
 
-		send_pckt(&data, &addr_con, &icmp_pckt, &time_start);
-		receive_pckt(&data, &addr_con, &icmp_pckt, &time_start);
+		send_pckt(&icmp_pckt, &addr_con, &data, &time_start);
+		receive_pckt(&icmp_pckt, &addr_con, &data, &time_start);
 
 		// to remove later
 		// ping(sockfd, &addr_con, ip_addr);
@@ -187,7 +173,7 @@ int main(int ac, char **av) {
 		sleep(data.sleep_time);
 	}
 
-	close(sockfd);
-	free(pckt.payload);
+	close(data.sockfd);
+	free(icmp_pckt.payload);
 	return 0;
 }

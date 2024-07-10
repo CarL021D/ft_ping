@@ -20,10 +20,10 @@
 
 typedef struct	s_data {
 
-	int32_t         	sockfd;
-	uint8_t         	payload_size;
-	uint32_t			sleep_time;
-	const char 			*ip_addr;
+	int32_t		sockfd;
+	uint8_t    	payload_size;
+	uint32_t	sleep_time;
+	char 		*ip_addr;
 }				t_data;
 
 typedef struct	s_icmp_pckt {
