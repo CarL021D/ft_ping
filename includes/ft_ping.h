@@ -13,8 +13,9 @@
 #include <netdb.h>
 #include <time.h>
 #include <errno.h>
+#include <signal.h>
 
-#define MAX_PACKET_SIZE 2048
+#define MAX_PACKET_SIZE 1024
 #define PING_PKT_SIZE 64
 #define PING_DELAY 1000000
 
@@ -24,19 +25,24 @@ typedef struct	s_data {
 	uint8_t    	payload_size;
 	uint32_t	sleep_time;
 	char 		*ip_addr;
+	uint16_t    icmp_pckt_size;
 }				t_data;
 
 typedef struct	s_icmp_pckt {
 
-	struct icmphdr *hdr;
+	struct icmphdr	*hdr;
 	char *payload;
 }				t_icmp_pckt;
 
 
 void	init_sock_addr(struct sockaddr_in *addr_con, char *ip_addr);
 void	init_data(t_data *data, char **av);
-void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data);
+// void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data);
+void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data, uint32_t sequence);
 
 char	*resolve_hostname_to_ip(const char *hostname);
+
+void	print_packet_content(t_data *data, t_icmp_pckt *pckt);
+
 
 #endif

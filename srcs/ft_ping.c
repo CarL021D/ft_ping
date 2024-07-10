@@ -20,6 +20,16 @@ unsigned short checksum(void *b, int len) {
 	return result;
 }
 
+void check_args(int ac) {
+
+	if (ac < 2) {
+		fprintf(stderr, "not enough arguments\n");
+		exit(EXIT_FAILURE);
+	}
+
+	// options to check here later
+}
+
 char *resolve_hostname_to_ip(const char *hostname) {    
 	struct addrinfo hints, *res;
 	static char ip_addr[INET_ADDRSTRLEN];
@@ -29,7 +39,7 @@ char *resolve_hostname_to_ip(const char *hostname) {
 	hints.ai_socktype = SOCK_STREAM;
 
 	if (getaddrinfo(hostname, NULL, &hints, &res) != 0) {
-		perror("getaddrinfo");
+		fprintf(stderr, "getaddrinfo error\n");
 		return NULL;
 	}
 
@@ -41,20 +51,32 @@ char *resolve_hostname_to_ip(const char *hostname) {
 
 void send_pckt(t_icmp_pckt *pckt, struct sockaddr_in *addr_con, t_data *data, struct timespec *time_start) {
 
+	printf("\n\n-----------\nSEND FUNC\n");
 
-	// memcpy(buffer, &pckt_hdr, sizeof(pckt_hdr));
-	for (uint16_t i = 0; i < data->payload_size; ++i)
-		pckt->payload[i] = rand() % 256;
-	
-	clock_gettime(CLOCK_MONOTONIC, time_start);
+	// printf("\n\npayload:           %d\n", data->payload_size);
 
-	pckt->hdr->checksum = checksum(&pckt->hdr, sizeof(*pckt));
+	for (uint16_t i = 0; i < data->payload_size; i++) {
 
-	if (sendto(data->sockfd, &pckt->hdr, sizeof(*pckt), 0,
-			   (struct sockaddr *)addr_con, sizeof(*addr_con)) <= 0) {
-		perror("sendto");
-		return;
+		char c = i < (data->payload_size) ? ((rand() % 95) + 32) : '\0';
+		pckt->payload[i] = c;		
+		// if (i < data->payload_size)
+		// 	pckt->payload[i] = (rand() % 95) + 32;
+		// else
+		// 	pckt->payload[i] = '\0'; 
 	}
+	print_packet_content(data, pckt);
+
+	clock_gettime(CLOCK_MONOTONIC, time_start);
+	pckt->hdr->checksum = checksum(pckt, sizeof(*pckt));
+
+
+	if (sendto(data->sockfd, pckt, sizeof(*pckt), 0,
+			   (struct sockaddr *)addr_con, sizeof(*addr_con)) <= 0) {
+		fprintf(stderr, "sendto error");
+		exit(EXIT_FAILURE);
+	}
+	
+	printf("packet successfully sent\n");
 }
 
 
@@ -86,7 +108,12 @@ void send_pckt(t_icmp_pckt *pckt, struct sockaddr_in *addr_con, t_data *data, st
 // 		return;
 // 	}
 
+
+
+
 // 	socklen_t addr_len = sizeof(*addr_con);
+
+
 // 	if (recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)addr_con, &addr_len) <= 0) {
 // 		perror("recvfrom");
 // 		return;
@@ -102,21 +129,30 @@ void send_pckt(t_icmp_pckt *pckt, struct sockaddr_in *addr_con, t_data *data, st
 // 	printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3Lf ms\n", ip_addr, sequence, ttl_value, rtt_msec);
 // }
 
-
-
-void receive_pckt(t_icmp_pckt *pckt, struct sockaddr_in *addr_con, t_data *data, struct timespec *time_start) {
+void receive_pckt(t_icmp_pckt *pckt, struct sockaddr_in *addr_con, t_data *data, struct timespec *time_start, uint32_t sequence) {
 	
-	char 				buffer[MAX_PACKET_SIZE];
+	char 				buffer[84];
+	// char 				buffer[data->icmp_pckt_size + sizeof(struct iphdr)];
 	socklen_t			addr_len = sizeof(*addr_con);
 	struct timespec		time_end;
-	static uint32_t		sequence = 0;
+
+	printf("\n-----------\nRCV FUNC\n");
+
+	// printf("--->>> %lu\n", data->icmp_pckt_size + sizeof(struct iphdr));
+
+	// print_packet_content(data, pckt);
 
 	memset(buffer, 0, sizeof(buffer));
 
+	// printf("addr family %d\n", addr_con->sin_family);
+
+	printf("\nrecvfrom start\n");
 	if (recvfrom(data->sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)addr_con, &addr_len) <= 0) {
-		perror("recvfrom");
-		return;
+		fprintf(stderr, "recvfrom");
+		exit(EXIT_FAILURE);
 	}
+
+	printf("\nrecvfrom end\n");
 
 	struct iphdr *ip_hdr = (struct iphdr *)buffer;
 	struct icmphdr *icmp_hdr = (struct icmphdr *)(buffer + (ip_hdr->ihl * 4));
@@ -131,6 +167,11 @@ void receive_pckt(t_icmp_pckt *pckt, struct sockaddr_in *addr_con, t_data *data,
 
 		rtt_msec = (time_end.tv_sec - time_start->tv_sec) * 1000.0;
 		rtt_msec += (time_end.tv_nsec - time_start->tv_nsec) / 1000000.0;
+
+		sequence++;
+
+		printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3Lf ms\n", data->ip_addr, sequence, ip_hdr->ip_ttl, rtt_msec);
+
 	}
 
 	(void)pckt;
@@ -138,11 +179,13 @@ void receive_pckt(t_icmp_pckt *pckt, struct sockaddr_in *addr_con, t_data *data,
 	(void)sequence;
 	(void)rtt_msec;
 
+	free(pckt->payload);
 
 	// uint16_t ttl_value = get_received_ttl(sockfd);
 	// sequence++;
 	// printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3Lf ms\n", ip_addr, sequence, ttl_value, rtt_msec);
 }
+
 
 int main(int ac, char **av) {
 
@@ -152,25 +195,26 @@ int main(int ac, char **av) {
 
 	(void)ac;
 
-
+	check_args(ac);
 	init_data(&data, av);
 	init_sock_addr(&addr_con, data.ip_addr);
-	printf("PING %s (%s): 56 data bytes\n", av[1], data.ip_addr);
+	printf("PING %s (%s): %hu data bytes\n", av[1], data.ip_addr, data.icmp_pckt_size);
 
 	while (1) {
 
-		struct timespec time_start;
+		struct timespec		time_start;
+		static uint32_t		sequence = 0;
 
-		init_icmp_pckt(&icmp_pckt, &data);
+		init_icmp_pckt(&icmp_pckt, &data, sequence);
 
 		send_pckt(&icmp_pckt, &addr_con, &data, &time_start);
-		receive_pckt(&icmp_pckt, &addr_con, &data, &time_start);
+		receive_pckt(&icmp_pckt, &addr_con, &data, &time_start, sequence);
 
 		// to remove later
 		// ping(sockfd, &addr_con, ip_addr);
 
 		// time to adjust
-		sleep(data.sleep_time);
+		usleep(data.sleep_time * 100000);
 	}
 
 	close(data.sockfd);

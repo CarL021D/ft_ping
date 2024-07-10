@@ -5,7 +5,7 @@ static int32_t init_icmp_socket() {
 
     int32_t sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
     if (sockfd < 0) {
-        perror("socket init error");
+        fprintf(stderr, "socket init error\n");
         return -1;
     }
     return sockfd;
@@ -27,8 +27,9 @@ void	init_data(t_data *data, char **av) {
 		exit(EXIT_FAILURE);
 	}
 	
-	data->payload_size = 56; // to adjust depending on the command option
-	data->sleep_time = 1;	// to adjust depending on the command option
+	data->payload_size = 56;	// to adjust depending on the command option
+	data->sleep_time = 1;		// to adjust depending on the command option
+	data->icmp_pckt_size =  sizeof(struct icmphdr) + data->payload_size;
 }
 
 void init_sock_addr(struct sockaddr_in *addr_con, char *ip_addr) {    
@@ -37,19 +38,30 @@ void init_sock_addr(struct sockaddr_in *addr_con, char *ip_addr) {
 	addr_con->sin_family = AF_INET;
 	addr_con->sin_port = htons(0);
 	addr_con->sin_addr.s_addr = inet_addr(ip_addr);
+
+	printf("addr family %d\n", addr_con->sin_family);
+	printf("addr port %d\n", addr_con->sin_port);
+
 }
 
-void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data) {
+void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data, uint32_t sequence) {
 
-		pckt->hdr->type = ICMP_ECHO;
-		pckt->hdr->code = 0;
-		pckt->hdr->un.echo.id = getpid();
-		pckt->hdr->checksum = 0;
 
-        pckt->payload = malloc(sizeof(data->payload_size));
-        if (!pckt->payload) {
-            perror("malloc error\n");
-            close(data->sockfd);
-            exit(EXIT_FAILURE);
-        }
+	// memset(pckt->hdr, 0, 8);
+	// pckt->hdr = malloc(sizeof(struct icmphdr));
+
+
+	pckt->hdr->type = ICMP_ECHO;
+	pckt->hdr->code = 0;
+	pckt->hdr->un.echo.id = getpid();
+	pckt->hdr->checksum = 0;
+	pckt->hdr->un.echo.sequence = sequence;
+
+
+	pckt->payload = malloc(sizeof(data->payload_size));
+    if (!pckt->payload) {
+        fprintf(stderr, "malloc error\n");
+        close(data->sockfd);
+        exit(EXIT_FAILURE);
+    }
 }
