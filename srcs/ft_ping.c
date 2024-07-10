@@ -20,7 +20,24 @@ unsigned short checksum(void *b, int len) {
 	return result;
 }
 
+char *resolve_hostname_to_ip(const char *hostname) {    
+	struct addrinfo hints, *res;
+	static char ip_addr[INET_ADDRSTRLEN];
 
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_STREAM;
+
+	if (getaddrinfo(hostname, NULL, &hints, &res) != 0) {
+		perror("getaddrinfo");
+		return NULL;
+	}
+
+	struct sockaddr_in *addr = (struct sockaddr_in *)res->ai_addr;
+	inet_ntop(AF_INET, &addr->sin_addr, ip_addr, sizeof(ip_addr));
+	freeaddrinfo(res);
+	return ip_addr;
+}
 
 void send_pckt(t_icmp_pckt *pckt, struct sockaddr_in *addr_con, t_data *data, struct timespec *time_start) {
 
@@ -103,7 +120,7 @@ void receive_pckt(t_icmp_pckt *pckt, struct sockaddr_in *addr_con, t_data *data,
 
 	struct iphdr *ip_hdr = (struct iphdr *)buffer;
 	struct icmphdr *icmp_hdr = (struct icmphdr *)(buffer + (ip_hdr->ihl * 4));
-	unsigned char *payload = buffer + (ip_hdr->ihl * 4) + sizeof(struct icmphdr);
+	char *payload = buffer + (ip_hdr->ihl * 4) + sizeof(struct icmphdr);
 	long double rtt_msec;
 
 
@@ -117,32 +134,15 @@ void receive_pckt(t_icmp_pckt *pckt, struct sockaddr_in *addr_con, t_data *data,
 	}
 
 	(void)pckt;
+	(void)payload;
+	(void)sequence;
+	(void)rtt_msec;
+
 
 	// uint16_t ttl_value = get_received_ttl(sockfd);
 	// sequence++;
 	// printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3Lf ms\n", ip_addr, sequence, ttl_value, rtt_msec);
 }
-
-
-const char *resolve_hostname_to_ip(const char *hostname) {    
-	struct addrinfo hints, *res;
-	static char ip_addr[INET_ADDRSTRLEN];
-
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
-
-	if (getaddrinfo(hostname, NULL, &hints, &res) != 0) {
-		perror("getaddrinfo");
-		return NULL;
-	}
-
-	struct sockaddr_in *addr = (struct sockaddr_in *)res->ai_addr;
-	inet_ntop(AF_INET, &addr->sin_addr, ip_addr, sizeof(ip_addr));
-	freeaddrinfo(res);
-	return ip_addr;
-}
-
 
 int main(int ac, char **av) {
 
@@ -161,7 +161,7 @@ int main(int ac, char **av) {
 
 		struct timespec time_start;
 
-		init_icmp_pckt(&icmp_pckt);
+		init_icmp_pckt(&icmp_pckt, &data);
 
 		send_pckt(&icmp_pckt, &addr_con, &data, &time_start);
 		receive_pckt(&icmp_pckt, &addr_con, &data, &time_start);

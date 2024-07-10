@@ -33,8 +33,10 @@ typedef struct	s_icmp_pckt {
 }				t_icmp_pckt;
 
 
-void	init_sock_addr(struct sockaddr_in *addr_con, const char *ip_addr);
+void	init_sock_addr(struct sockaddr_in *addr_con, char *ip_addr);
 void	init_data(t_data *data, char **av);
-void	init_icmp_pckt(t_icmp_pckt *pckt);
+void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data);
+
+char	*resolve_hostname_to_ip(const char *hostname);
 
 #endif

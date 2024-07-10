@@ -1,7 +1,8 @@
 NAME = ft_ping
 
 SRCS = srcs/ft_ping.c		\
-       srcs/valuesinit.c
+       srcs/values_init.c
+	#    srcs/utils.c
 
 OBJS = ${SRCS:.c=.o}
 
