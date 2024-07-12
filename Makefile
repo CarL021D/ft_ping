@@ -6,13 +6,14 @@ SRCS = srcs/ft_ping.c		\
 
 OBJS = ${SRCS:.c=.o}
 
-CFLAGS = -Wall -Werror -Wextra -g3                             \
-    -O0                             \
-    -fsanitize=address              \
-    -fsanitize=undefined            \
-    -fno-omit-frame-pointer         \
-    -fstack-protector-strong        \
-    -fno-optimize-sibling-calls
+CFLAGS = -Wall -Werror -Wextra 
+# -g3  \
+#     -O0                             \
+#     -fsanitize=address              \
+#     -fsanitize=undefined            \
+#     -fno-omit-frame-pointer         \
+#     -fstack-protector-strong        \
+#     -fno-optimize-sibling-calls
 	
 CC = gcc
 

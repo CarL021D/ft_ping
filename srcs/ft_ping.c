@@ -5,6 +5,14 @@
 #define TTL_VALUE 64
 #define PING_PKT_SIZE 64
 
+volatile sig_atomic_t c_sig = 0;
+
+void sig_handler(int _)
+{
+    (void)_;
+    c_sig = 1;
+}
+
 unsigned short checksum(void *b, int len) {    
 	unsigned short *buf = b; 
 	unsigned int sum = 0;
@@ -52,8 +60,6 @@ char *resolve_hostname_to_ip(const char *hostname) {
 void send_pckt(t_icmp_pckt *pckt, struct sockaddr_in *addr_con, t_data *data, struct timespec *time_start) {
 
 	printf("\n\n-----------\nSEND FUNC\n");
-
-	// printf("\n\npayload:           %d\n", data->payload_size);
 
 	for (uint16_t i = 0; i < data->payload_size; i++) {
 
@@ -131,21 +137,20 @@ void send_pckt(t_icmp_pckt *pckt, struct sockaddr_in *addr_con, t_data *data, st
 
 void receive_pckt(t_icmp_pckt *pckt, struct sockaddr_in *addr_con, t_data *data, struct timespec *time_start, uint32_t sequence) {
 	
-	char 				buffer[84];
-	// char 				buffer[data->icmp_pckt_size + sizeof(struct iphdr)];
+	// char 				buffer[84];
+	char 				buffer[data->icmp_pckt_size + sizeof(struct iphdr)];
 	socklen_t			addr_len = sizeof(*addr_con);
 	struct timespec		time_end;
 
 	printf("\n-----------\nRCV FUNC\n");
 
 	// printf("--->>> %lu\n", data->icmp_pckt_size + sizeof(struct iphdr));
-
 	// print_packet_content(data, pckt);
 
 	memset(buffer, 0, sizeof(buffer));
 
 	// printf("addr family %d\n", addr_con->sin_family);
-
+ 
 	printf("\nrecvfrom start\n");
 	if (recvfrom(data->sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)addr_con, &addr_len) <= 0) {
 		fprintf(stderr, "recvfrom");
@@ -159,9 +164,7 @@ void receive_pckt(t_icmp_pckt *pckt, struct sockaddr_in *addr_con, t_data *data,
 	char *payload = buffer + (ip_hdr->ihl * 4) + sizeof(struct icmphdr);
 	long double rtt_msec;
 
-
 	if (icmp_hdr->type == ICMP_ECHO_REPLY) {
-
 
 		clock_gettime(CLOCK_MONOTONIC, &time_end);
 
@@ -193,14 +196,14 @@ int main(int ac, char **av) {
 	t_icmp_pckt			icmp_pckt;
 	struct sockaddr_in	addr_con;
 
-	(void)ac;
+	signal(SIGINT, sig_handler);
 
 	check_args(ac);
 	init_data(&data, av);
 	init_sock_addr(&addr_con, data.ip_addr);
 	printf("PING %s (%s): %hu data bytes\n", av[1], data.ip_addr, data.icmp_pckt_size);
 
-	while (1) {
+	while (!c_sig) {
 
 		struct timespec		time_start;
 		static uint32_t		sequence = 0;

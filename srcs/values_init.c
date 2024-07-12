@@ -46,17 +46,14 @@ void init_sock_addr(struct sockaddr_in *addr_con, char *ip_addr) {
 
 void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data, uint32_t sequence) {
 
-
-	// memset(pckt->hdr, 0, 8);
+	memset(pckt->hdr, 0, 8);
 	// pckt->hdr = malloc(sizeof(struct icmphdr));
-
 
 	pckt->hdr->type = ICMP_ECHO;
 	pckt->hdr->code = 0;
 	pckt->hdr->un.echo.id = getpid();
 	pckt->hdr->checksum = 0;
 	pckt->hdr->un.echo.sequence = sequence;
-
 
 	pckt->payload = malloc(sizeof(data->payload_size));
     if (!pckt->payload) {
