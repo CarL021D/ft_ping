@@ -5,13 +5,13 @@
 #define TTL_VALUE 64
 #define PING_PKT_SIZE 64
 
-// volatile sig_atomic_t c_sig = 0;
+volatile sig_atomic_t c_sig = 0;
 
-// void sig_handler(int _)
-// {
-//     (void)_;
-//     c_sig = 1;
-// }
+void sig_handler(int _)
+{
+    (void)_;
+    c_sig = 1;
+}
 
 
 
@@ -217,7 +217,7 @@ int main(int ac, char **av) {
 	struct sockaddr_in	addr_con;
 
 	// TODO add signal
-	// signal(SIGINT, sig_handler);
+	signal(SIGINT, sig_handler);
 
 
 	check_args(ac);
@@ -225,8 +225,8 @@ int main(int ac, char **av) {
 	init_sock_addr(&addr_con, data.ip_addr);
 	printf("PING %s (%s): %hu data bytes\n", av[1], data.ip_addr, data.icmp_pckt_size);
 
-	// while (!c_sig) {
-	while (1) {
+	// while (1) {
+	while (!c_sig) {
 
 		ping(&data, &addr_con);
 
@@ -235,6 +235,8 @@ int main(int ac, char **av) {
 	}
 
 	// TODO print exit control c output
+
+	printf("\ncontrol C successfull\n");
 
 	close(data.sockfd);
 	return 0;
