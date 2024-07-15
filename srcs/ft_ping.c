@@ -22,7 +22,7 @@ void check_args(int ac) {
 		exit(EXIT_FAILURE);
 	}
 
-	// options to check here later
+	// TODO bonus: options to set here later
 }
 
 
@@ -165,6 +165,15 @@ void check_args(int ac) {
 // 	// printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3Lf ms\n", ip_addr, sequence, ttl_value, rtt_msec);
 // }
 
+
+
+// bool check_received_error(uint16_t pckt_sent_sum, struct icmphdr *rcvd_icmp_hdr) {
+
+	// TODO check checksum of both packets see if payload corruption
+
+	// TODO icmphdr code and type checks
+// }
+
 void ping(t_data *data, struct sockaddr_in *addr_con) {
     t_icmp_pckt pckt;
     struct timespec time_start, time_end;
@@ -187,8 +196,8 @@ void ping(t_data *data, struct sockaddr_in *addr_con) {
         exit(EXIT_FAILURE);
     }
 
+	// TODO encapsulate within a stop time function
     clock_gettime(CLOCK_MONOTONIC, &time_end);
-
     rtt_msec = (time_end.tv_sec - time_start.tv_sec) * 1000.0;
     rtt_msec += (time_end.tv_nsec - time_start.tv_nsec) / 1000000.0;
 
@@ -196,8 +205,8 @@ void ping(t_data *data, struct sockaddr_in *addr_con) {
     struct icmphdr *icmp_hdr = (struct icmphdr *)(buffer + (ip_hdr->ihl * 4));
 
     if (icmp_hdr->type == ICMP_ECHOREPLY && icmp_hdr->un.echo.id == getpid()) {
-        printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3Lf ms\n", data->ip_addr, sequence - 1, ip_hdr->ttl, rtt_msec);
 		sequence++;
+        printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3Lf ms\n", data->ip_addr, sequence, ip_hdr->ttl, rtt_msec);
     }
 }
 
@@ -207,6 +216,7 @@ int main(int ac, char **av) {
 	t_data				data;
 	struct sockaddr_in	addr_con;
 
+	// TODO add signal
 	// signal(SIGINT, sig_handler);
 
 
@@ -220,16 +230,11 @@ int main(int ac, char **av) {
 
 		ping(&data, &addr_con);
 
-		// struct timespec		time_start;
-		// static uint32_t		sequence = 0;
-		// init_icmp_pckt(&icmp_pckt, &data, sequence);	
-		// send_pckt(&icmp_pckt, &addr_con, &data, &time_start);
-		// receive_pckt(&icmp_pckt, &addr_con, &data, &time_start, sequence);
-
-
 		// time to adjust
 		usleep(data.sleep_time * 100000);
 	}
+
+	// TODO print exit control c output
 
 	close(data.sockfd);
 	return 0;
