@@ -1,5 +1,5 @@
-#include "ft_ping.h"
-#include "ip_icmp.h"
+#include "../includes/ft_ping.h"
+// #include "ip_icmp.h"
 
 static int32_t init_icmp_socket() {
 
@@ -44,21 +44,22 @@ void init_sock_addr(struct sockaddr_in *addr_con, char *ip_addr) {
 
 }
 
-void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data, uint32_t sequence) {
+void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data, uint16_t sequence) {
 
-	memset(pckt->hdr, 0, 8);
-	// pckt->hdr = malloc(sizeof(struct icmphdr));
+	// type for the moment depending on if we custom the payload size
+	(void)data;
 
-	pckt->hdr->type = ICMP_ECHO;
-	pckt->hdr->code = 0;
-	pckt->hdr->un.echo.id = getpid();
-	pckt->hdr->checksum = 0;
-	pckt->hdr->un.echo.sequence = sequence;
+	memset(pckt, 0, sizeof(t_icmp_pckt));
 
-	pckt->payload = malloc(sizeof(data->payload_size));
-    if (!pckt->payload) {
-        fprintf(stderr, "malloc error\n");
-        close(data->sockfd);
-        exit(EXIT_FAILURE);
+	pckt->hdr.type = ICMP_ECHO;
+	pckt->hdr.code = 0;
+	pckt->hdr.un.echo.id = getpid();
+	pckt->hdr.checksum = 0;
+	pckt->hdr.un.echo.sequence = sequence;
+
+	for (uint16_t i = 0; i < data->payload_size - 1; i++) {
+        pckt->payload[i] = (rand() % 95) + 32;
     }
+    pckt->payload[data->payload_size - 1] = '\0';
+	pckt->hdr.checksum = checksum(pckt, sizeof(t_icmp_pckt));
 }
