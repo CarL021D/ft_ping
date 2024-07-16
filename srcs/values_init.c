@@ -58,4 +58,6 @@ void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data, uint16_t sequence) {
     }
     pckt->payload[data->payload_size - 1] = '\0';
 	pckt->hdr.checksum = checksum(pckt, sizeof(t_icmp_pckt));
+	printf("sendto checksum  %d\n", pckt->hdr.checksum);
+
 }

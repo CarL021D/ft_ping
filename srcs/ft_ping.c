@@ -1,8 +1,5 @@
 #include "../includes/ft_ping.h"
-// #include "../includes/ip_icmp.h"
-// #include "../includes/ip.h"
 
-#define TTL_VALUE 64
 #define PING_PKT_SIZE 64
 
 volatile sig_atomic_t c_sig = 0;
@@ -12,8 +9,6 @@ void sig_handler(int _)
     (void)_;
     c_sig = 1;
 }
-
-
 
 void check_args(int ac) {
 
@@ -25,154 +20,32 @@ void check_args(int ac) {
 	// TODO bonus: options to set here later
 }
 
+void chekcums_compar(char *buffer, t_icmp_pckt *pckt) {
+    t_icmp_pckt rcv_pckt;
+    
+    struct iphdr *ip_hdr = (struct iphdr *)buffer;
+    struct icmphdr *icmp_hdr = (struct icmphdr *)(buffer + (ip_hdr->ihl * 4));
 
+    memcpy(&rcv_pckt.hdr, icmp_hdr, sizeof(struct icmphdr));
+    memcpy(rcv_pckt.payload, buffer + (ip_hdr->ihl * 4) + sizeof(struct icmphdr), PAYLOAD_SIZE);
 
-// void send_pckt(t_icmp_pckt *pckt, struct sockaddr_in *addr_con, t_data *data, struct timespec *time_start) {
+    printf("Sent payload ------>   %s\n", pckt->payload);
+    printf("Received payload  ------>   %s\n", rcv_pckt.payload);
+    printf("Sent ICMP checksum ------>   %d\n", pckt->hdr.checksum);
+    
+    rcv_pckt.hdr.checksum = 0;
+    printf("Received ICMP checksum ------>   %d\n", checksum(&rcv_pckt, sizeof(struct icmphdr) + PAYLOAD_SIZE));
+}
 
-// 	printf("\n\n-----------\nSEND FUNC\n");
+// bool check_rcv_pckt_error(uint16_t sent_checksum, char *buffer) {
 
-// 	for (uint16_t i = 0; i < data->payload_size; i++) {
+// ;
 
-// 		char c = i < (data->payload_size) ? ((rand() % 95) + 32) : '\0';
-// 		pckt->payload[i] = c;		
-// 		// if (i < data->payload_size)
-// 		// 	pckt->payload[i] = (rand() % 95) + 32;
-// 		// else
-// 		// 	pckt->payload[i] = '\0'; 
-// 	}
-// 	print_packet_content(data, pckt);
-
-// 	clock_gettime(CLOCK_MONOTONIC, time_start);
-// 	pckt->hdr.checksum = checksum(pckt, sizeof(*pckt));
-
-
-// 	if (sendto(data->sockfd, pckt, sizeof(*pckt), 0,
-// 			   (struct sockaddr *)addr_con, sizeof(*addr_con)) <= 0) {
-// 		fprintf(stderr, "sendto error");
-// 		exit(EXIT_FAILURE);
-// 	}
 	
-// 	printf("packet successfully sent\n");
 // }
 
 
 
-// // void ping(int32_t sockfd, struct sockaddr_in *addr_con, const char *ip_addr) {
-// // 	static uint32_t sequence = 0;
-// // 	struct icmphdr pckt_hdr;
-// // 	char buffer[PING_PKT_SIZE];
-// // 	long double rtt_msec = 0;
-
-// // 	memset(&buffer, 0, sizeof(buffer));
-
-// // 	pckt_hdr.type = ICMP_ECHO;
-// // 	pckt_hdr.code = 0;
-// // 	pckt_hdr.un.echo.sequence = sequence;
-// // 	pckt_hdr.un.echo.id = getpid();
-// // 	pckt_hdr.checksum = 0;
-
-// // 	memcpy(buffer, &pckt_hdr, sizeof(pckt_hdr));
-
-// // 	pckt_hdr.checksum = checksum(buffer, sizeof(buffer));
-
-// // 	memcpy(buffer, &pckt_hdr, sizeof(pckt_hdr));
-
-// // 	clock_gettime(CLOCK_MONOTONIC, &time_start);
-
-// // 	if (sendto(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)addr_con, sizeof(*addr_con)) <= 0) {
-// // 		perror("sendto");
-// // 		return;
-// // 	}
-
-
-
-
-// // 	socklen_t addr_len = sizeof(*addr_con);
-
-
-// // 	if (recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)addr_con, &addr_len) <= 0) {
-// // 		perror("recvfrom");
-// // 		return;
-// // 	}
-
-// // 	clock_gettime(CLOCK_MONOTONIC, &time_end);
-
-// // 	rtt_msec = (time_end.tv_sec - time_start.tv_sec) * 1000.0;
-// // 	rtt_msec += (time_end.tv_nsec - time_start.tv_nsec) / 1000000.0;
-
-// // 	uint16_t ttl_value = get_received_ttl(sockfd);
-// // 	sequence++;
-// // 	printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3Lf ms\n", ip_addr, sequence, ttl_value, rtt_msec);
-// // }
-
-// void receive_pckt(t_icmp_pckt *pckt, struct sockaddr_in *addr_con, t_data *data, struct timespec *time_start, uint32_t sequence) {
-	
-// 	// char 				buffer[84];
-// 	char 				buffer[data->icmp_pckt_size + sizeof(struct iphdr)];
-// 	socklen_t			addr_len = sizeof(*addr_con);
-// 	struct timespec		time_end;
-
-// 	printf("\n-----------\nRCV FUNC\n");
-
-// 	// printf("--->>> %lu\n", data->icmp_pckt_size + sizeof(struct iphdr));
-// 	// print_packet_content(data, pckt);
-
-// 	memset(buffer, 0, sizeof(buffer));
-
-// 	// printf("addr family %d\n", addr_con->sin_family);
- 
-// 	// printf("\nrecvfrom start\n");
-// 	printf("SEGFAULT\n");
-// 	if (recvfrom(data->sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)addr_con, &addr_len) <= 0) {
-// 		fprintf(stderr, "recvfrom");
-// 		exit(EXIT_FAILURE);
-// 	}
-
-
-// 	// printf("\nrecvfrom end\n");
-
-
-// 	struct iphdr *ip_hdr = (struct iphdr *)buffer;
-// 	struct icmphdr *icmp_hdr = (struct icmphdr *)(buffer + (ip_hdr->ihl * 4));
-// 	char *payload = buffer + (ip_hdr->ihl * 4) + sizeof(struct icmphdr);
-// 	long double rtt_msec;
-
-// 	printf("icmp hdr type %d\n", icmp_hdr->type);
-
-// 	if (icmp_hdr->type == ICMP_ECHOREPLY) {
-
-// 		clock_gettime(CLOCK_MONOTONIC, &time_end);
-
-// 		rtt_msec = (time_end.tv_sec - time_start->tv_sec) * 1000.0;
-// 		rtt_msec += (time_end.tv_nsec - time_start->tv_nsec) / 1000000.0;
-
-// 		sequence++;
-
-// 		printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3Lf ms\n", data->ip_addr, sequence, ip_hdr->ttl, rtt_msec);
-
-// 	}
-// 	free(pckt->payload);
-// 	printf("Packket successfully received\n");
-
-// 	(void)pckt;
-// 	(void)payload;
-// 	(void)sequence;
-// 	(void)rtt_msec;
-
-
-// 	// uint16_t ttl_value = get_received_ttl(sockfd);
-// 	// sequence++;
-// 	// printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3Lf ms\n", ip_addr, sequence, ttl_value, rtt_msec);
-// }
-
-
-
-// bool check_received_error(uint16_t pckt_sent_sum, struct icmphdr *rcvd_icmp_hdr) {
-
-	// TODO check checksum of both packets see if payload corruption
-
-	// TODO icmphdr code and type checks
-// }
 
 void ping(t_data *data, struct sockaddr_in *addr_con) {
     t_icmp_pckt pckt;
@@ -201,13 +74,26 @@ void ping(t_data *data, struct sockaddr_in *addr_con) {
     rtt_msec = (time_end.tv_sec - time_start.tv_sec) * 1000.0;
     rtt_msec += (time_end.tv_nsec - time_start.tv_nsec) / 1000000.0;
 
-    struct iphdr *ip_hdr = (struct iphdr *)buffer;
-    struct icmphdr *icmp_hdr = (struct icmphdr *)(buffer + (ip_hdr->ihl * 4));
+ 
+	struct iphdr 	ip_hdr;
+	struct icmphdr	icmp_hdr;
 
-    if (icmp_hdr->type == ICMP_ECHOREPLY && icmp_hdr->un.echo.id == getpid()) {
+	memcpy(&ip_hdr, buffer, sizeof(struct iphdr));
+
+	int ip_header_length = ip_hdr.ihl * 4;
+	
+	memcpy(&icmp_hdr, buffer + ip_header_length, sizeof(struct icmphdr));
+
+
+	// TODO create a function that returns the icmp response into a packet
+	// TODO check checksum of both packets see if payload corruption
+
+	chekcums_compar(buffer, &pckt);
+
+	if (icmp_hdr.type == ICMP_ECHOREPLY && icmp_hdr.un.echo.id == getpid()) {
 		sequence++;
-        printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3Lf ms\n", data->ip_addr, sequence, ip_hdr->ttl, rtt_msec);
-    }
+        printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3Lf ms\n", data->ip_addr, sequence, ip_hdr.ttl, rtt_msec);
+	}
 }
 
 
@@ -216,16 +102,13 @@ int main(int ac, char **av) {
 	t_data				data;
 	struct sockaddr_in	addr_con;
 
-	// TODO add signal
 	signal(SIGINT, sig_handler);
-
 
 	check_args(ac);
 	init_data(&data, av);
 	init_sock_addr(&addr_con, data.ip_addr);
 	printf("PING %s (%s): %hu data bytes\n", av[1], data.ip_addr, data.icmp_pckt_size);
 
-	// while (1) {
 	while (!c_sig) {
 
 		ping(&data, &addr_con);
