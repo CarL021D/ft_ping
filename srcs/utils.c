@@ -36,6 +36,17 @@ char *resolve_hostname_to_ip(const char *hostname) {
 	return ip_addr;
 }
 
+long double get_ping_duration(struct timespec *time_start, struct timespec *time_end) {
+
+	long double rtt_msec;
+
+	clock_gettime(CLOCK_MONOTONIC, time_end);
+    rtt_msec = (time_end->tv_sec - time_start->tv_sec) * 1000.0;
+    rtt_msec += (time_end->tv_nsec - time_start->tv_nsec) / 1000000.0;
+	
+	return rtt_msec;
+}
+
 void print_packet_content(t_data *data, t_icmp_pckt *pckt) {
 
 	(void)data;

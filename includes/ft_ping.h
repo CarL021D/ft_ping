@@ -42,8 +42,12 @@ void	init_data(t_data *data, char **av);
 // void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data);
 void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data, uint16_t sequence);
 
+void send_packet(t_data *data, t_icmp_pckt *pckt, struct sockaddr_in *addr_con);
+void receive_packet(t_data *data, char *buffer, struct sockaddr_in *addr_con);
+
 unsigned short 	checksum(void *b, int len);   
 char			*resolve_hostname_to_ip(const char *hostname);
+long double		get_ping_duration(struct timespec *time_start, struct timespec *time_end);
 void			print_packet_content(t_data *data, t_icmp_pckt *pckt);
 
 
