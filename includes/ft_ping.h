@@ -28,6 +28,7 @@ typedef struct	s_data {
 	uint32_t	sleep_time;
 	char 		*ip_addr;
 	uint16_t    icmp_pckt_size;
+	uint16_t    sequence;
 }				t_data;
 
 typedef struct	s_icmp_pckt {
@@ -39,9 +40,9 @@ typedef struct	s_icmp_pckt {
 
 void	init_sock_addr(struct sockaddr_in *addr_con, char *ip_addr);
 void	init_data(t_data *data, char **av);
-void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data, uint16_t sequence);
+void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data);
 
-void print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, uint16_t sequence, long double rtt_msec);
+void print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, long double rtt_msec);
 bool cheksums_compar(t_icmp_pckt *sent_pckt, t_icmp_pckt *rcvd_pckt);
 
 unsigned short 	checksum(void *b, int len);   

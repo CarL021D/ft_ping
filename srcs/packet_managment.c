@@ -18,7 +18,7 @@ bool cheksums_compar(t_icmp_pckt *sent_pckt, t_icmp_pckt *rcvd_pckt) {
 	return false;
 }
 
-void print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, uint16_t sequence, long double rtt_msec) {
+void print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, long double rtt_msec) {
 
 	t_icmp_pckt rcvd_pckt;
 	struct iphdr *ip_hdr = (struct iphdr *)buffer;
@@ -31,9 +31,8 @@ void print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, u
 		printf("CORRUPTED PAYLOAD\n");
 
 	if (icmp_hdr->type == ICMP_ECHOREPLY && icmp_hdr->un.echo.id == getpid()) {
-		sequence++;
-		uint16_t actual_seq = strcmp(data->ip_addr, "127.0.0.1") ? (sequence / 2) : sequence;
-		printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3Lf ms\n", data->ip_addr, actual_seq, ip_hdr->ttl, rtt_msec);
+		printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3Lf ms\n", data->ip_addr, data->sequence, ip_hdr->ttl, rtt_msec);
+		data->sequence++;
 	}
 
 	//  Todo code and type error check to add here

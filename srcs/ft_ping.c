@@ -26,9 +26,8 @@ void ping(t_data *data, struct sockaddr_in *addr_con) {
 	socklen_t addr_len = sizeof(*addr_con);
 	char buffer[sizeof(struct iphdr) + sizeof(t_icmp_pckt)];
 	long double rtt_msec;
-	static uint16_t sequence = 0;
 
-	init_icmp_pckt(&pckt, data, sequence);
+	init_icmp_pckt(&pckt, data);
 	clock_gettime(CLOCK_MONOTONIC, &time_start);
 
     if (sendto(data->sockfd, &pckt, sizeof(t_icmp_pckt), 0, (struct sockaddr *)addr_con, sizeof(*addr_con)) <= 0) {
@@ -43,8 +42,7 @@ void ping(t_data *data, struct sockaddr_in *addr_con) {
 	}
 
 	rtt_msec = get_ping_duration(&time_start, &time_end);
-	print_rcvd_packet_response(data, buffer, &pckt, sequence, rtt_msec);
-	sequence++;
+	print_rcvd_packet_response(data, buffer, &pckt, rtt_msec);
 
 }
 
@@ -70,7 +68,6 @@ int main(int ac, char **av) {
 	}
 
 	// TODO print exit control c output
-
 	printf("\ncontrol C successfull\n");
 
 	close(data.sockfd);

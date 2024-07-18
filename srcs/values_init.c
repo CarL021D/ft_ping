@@ -30,6 +30,7 @@ void	init_data(t_data *data, char **av) {
 	data->payload_size = 56;	// to adjust depending on the command option
 	data->sleep_time = 1;		// to adjust depending on the command option
 	data->icmp_pckt_size =  sizeof(struct icmphdr) + data->payload_size;
+	data->sequence = 0;
 }
 
 void init_sock_addr(struct sockaddr_in *addr_con, char *ip_addr) {    
@@ -40,10 +41,9 @@ void init_sock_addr(struct sockaddr_in *addr_con, char *ip_addr) {
 	addr_con->sin_addr.s_addr = inet_addr(ip_addr);
 }
 
-void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data, uint16_t sequence) {
+void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data) {
 
 	// void type for the moment, going to depend on whether we custom the payload size or not
-	(void)data;
 
 	memset(pckt, 0, sizeof(t_icmp_pckt));
 
@@ -51,13 +51,12 @@ void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data, uint16_t sequence) {
 	pckt->hdr.code = 0;
 	pckt->hdr.un.echo.id = getpid();
 	pckt->hdr.checksum = 0;
-	pckt->hdr.un.echo.sequence = sequence;
+	pckt->hdr.un.echo.sequence = data->sequence;
 
 	for (uint16_t i = 0; i < data->payload_size - 1; i++) {
         pckt->payload[i] = (rand() % 95) + 32;
     }
     pckt->payload[data->payload_size - 1] = '\0';
 	pckt->hdr.checksum = checksum(pckt, sizeof(t_icmp_pckt));
-	// printf("sendto checksum  %d\n", pckt->hdr.checksum);
 
 }
