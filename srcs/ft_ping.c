@@ -37,34 +37,6 @@ long double calculate_stddev(t_data *data) {
     return sqrt(sum_sq_diff / data->sequence);
 }
 
-void ping(t_data *data, struct sockaddr_in *addr_con) {
-	t_icmp_pckt pckt;
-	struct timespec time_start, time_end;
-	socklen_t addr_len = sizeof(*addr_con);
-	char buffer[sizeof(struct iphdr) + sizeof(t_icmp_pckt)];
-	long double rtt_msec;
-
-	init_icmp_pckt(&pckt, data);
-	clock_gettime(CLOCK_MONOTONIC, &time_start);
-
-    if (sendto(data->sockfd, &pckt, sizeof(t_icmp_pckt), 0, (struct sockaddr *)addr_con, sizeof(*addr_con)) <= 0) {
-        perror("sendto");
-        exit(EXIT_FAILURE);
-    }
-	data->sent_pckt_count++;
-
-	memset(buffer, 0,sizeof(buffer));
-	if (recvfrom(data->sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)addr_con, &addr_len) <= 0) {
-		perror("recvfrom");
-		exit(EXIT_FAILURE);
-	}
-	data->rcvd_pckt_count++;
-
-	rtt_msec = get_ping_duration(&time_start, &time_end);
-	print_rcvd_packet_response(data, buffer, &pckt, rtt_msec);
-	update_data(data, rtt_msec);
-
-}
 
 void ping_exit_output(t_data *data, char *dns) {
 
@@ -86,7 +58,7 @@ void ping_exit_output(t_data *data, char *dns) {
 	stddev_rtt = calculate_stddev(data);
 
 	printf("round_trip min/avg/max/stddev = %.3Lf/%.3Lf/%.3Lf/%.3Lf\n",
-		min_rtt, avrg_rtt, max_rtt,stddev_rtt);
+			min_rtt, avrg_rtt, max_rtt,stddev_rtt);
 }
 
 void update_data(t_data *data, long double rtt_msec) {
@@ -102,6 +74,38 @@ void update_data(t_data *data, long double rtt_msec) {
     data->rtt_arr[data->sequence - 1] = rtt_msec;
 }
 
+void ping(t_data *data, struct sockaddr_in *addr_con) {
+	t_icmp_pckt pckt;
+	struct timespec time_start, time_end;
+	socklen_t addr_len = sizeof(*addr_con);
+	char buffer[sizeof(struct iphdr) + sizeof(t_icmp_pckt)];
+	long double rtt_msec;
+
+	init_icmp_pckt(&pckt, data);
+	clock_gettime(CLOCK_MONOTONIC, &time_start);
+
+    if (sendto(data->sockfd, &pckt, sizeof(t_icmp_pckt), 0, (struct sockaddr *)addr_con, sizeof(*addr_con)) <= 0) {
+        perror("sendto");
+        exit(EXIT_FAILURE);
+    }
+	data->sent_pckt_count++;
+	memset(buffer, 0,sizeof(buffer));
+
+	while (1) {
+		if (recvfrom(data->sockfd, buffer, sizeof(buffer), 0,
+				(struct sockaddr *)addr_con, &addr_len) <= 0) {
+			perror("recvfrom");
+			exit(EXIT_FAILURE);
+		}
+		if (analyse_pckt_addr(buffer))
+			break;
+	}
+	data->rcvd_pckt_count++;
+	rtt_msec = get_ping_duration(&time_start, &time_end);
+	print_rcvd_packet_response(data, buffer, &pckt, rtt_msec);
+	update_data(data, rtt_msec);
+}
+
 int main(int ac, char **av) {
 
 	t_data				data;
@@ -115,10 +119,7 @@ int main(int ac, char **av) {
 	printf("PING %s (%s): %hu data bytes\n", av[1], data.ip_addr, data.icmp_pckt_size);
 
 	while (!c_sig) {
-
 		ping(&data, &addr_con);
-
-		// time to adjust
 		usleep(data.sleep_time * 1000000);
 	}
 

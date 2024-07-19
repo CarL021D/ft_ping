@@ -47,6 +47,7 @@ void	init_data(t_data *data, char **av);
 void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data);
 
 bool cheksums_compar(t_icmp_pckt *sent_pckt, t_icmp_pckt *rcvd_pckt);
+bool analyse_pckt_addr(char *buffer);
 void print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, long double rtt_msec);
 void packet_rcvd_error_check(t_icmp_pckt *rcvd_pckt);
 

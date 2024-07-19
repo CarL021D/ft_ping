@@ -18,6 +18,27 @@ bool cheksums_compar(t_icmp_pckt *sent_pckt, t_icmp_pckt *rcvd_pckt) {
 	return false;
 }
 
+bool analyse_pckt_addr(char *buffer) {
+
+	struct iphdr *ip_hdr = (struct iphdr *)buffer;
+	struct icmphdr *icmp_hdr = (struct icmphdr *)(buffer + (ip_hdr->ihl * 4));
+	char src_ip[INET_ADDRSTRLEN];
+	char dst_ip[INET_ADDRSTRLEN];
+
+	if (inet_ntop(AF_INET, &ip_hdr->saddr, src_ip, sizeof(src_ip)) == NULL) {
+		perror("inet_ntop src_ip");
+		exit(EXIT_FAILURE);
+	}
+
+	if (inet_ntop(AF_INET, &ip_hdr->daddr, dst_ip, sizeof(dst_ip)) == NULL) {
+		perror("inet_ntop dst_ip");
+		exit(EXIT_FAILURE);
+	}
+	if (strcmp(src_ip, dst_ip) || (!strcmp(src_ip, dst_ip) && !icmp_hdr->type))
+		return true;
+	return false;
+}
+
 void print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, long double rtt_msec) {
 
 	t_icmp_pckt rcvd_pckt;
@@ -36,6 +57,8 @@ void print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, l
 		return ;
 	}
 	packet_rcvd_error_check(&rcvd_pckt);
+
+	(void)pckt;
 }
 
 void packet_rcvd_error_check(t_icmp_pckt *rcvd_pckt) {
