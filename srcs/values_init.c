@@ -30,7 +30,17 @@ void	init_data(t_data *data, char **av) {
 	data->payload_size = 56;	// to adjust depending on the command option
 	data->sleep_time = 1;		// to adjust depending on the command option
 	data->icmp_pckt_size =  sizeof(struct icmphdr) + data->payload_size;
+	data->sent_pckt_count = 0;
+	data->rcvd_pckt_count = 0;
 	data->sequence = 0;
+	data->rtt_arr = malloc(data->sequence * sizeof(long double));
+	if (!data->rtt_arr) {
+		close(data->sockfd);
+		fprintf(stderr, "\n");
+		exit(EXIT_FAILURE);
+	}
+
+
 }
 
 void init_sock_addr(struct sockaddr_in *addr_con, char *ip_addr) {    
@@ -58,5 +68,4 @@ void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data) {
     }
     pckt->payload[data->payload_size - 1] = '\0';
 	pckt->hdr.checksum = checksum(pckt, sizeof(t_icmp_pckt));
-
 }

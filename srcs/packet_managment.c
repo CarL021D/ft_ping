@@ -33,7 +33,149 @@ void print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, l
 	if (icmp_hdr->type == ICMP_ECHOREPLY && icmp_hdr->un.echo.id == getpid()) {
 		printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3Lf ms\n", data->ip_addr, data->sequence, ip_hdr->ttl, rtt_msec);
 		data->sequence++;
+		return ;
+	}
+	packet_rcvd_error_check(&rcvd_pckt);
+}
+
+void packet_rcvd_error_check(t_icmp_pckt *rcvd_pckt) {
+
+	if (rcvd_pckt->hdr.type == 3) {
+
+		switch (rcvd_pckt->hdr.code) {
+
+			case 0:
+				printf("Net Unreachable\n");
+				break;
+			case 1:
+				printf("Host Unreachable\n");
+				break;
+			case 2:
+				printf("Protocol Unreachable\n");
+				break;
+			case 3:
+				printf("Port Unreachable\n");
+				break;
+			case 4:
+				printf("Fragmentation Needed and Don't Fragment was Se\n");
+				break;
+			case 5:
+				printf("Source Route Failed\n");
+				break;
+			case 6:
+				printf("Destination Network Unknown\n");
+				break;
+			case 7:
+				printf("Destination Host Unknown\n");
+				break;
+			case 8:
+				printf("Source Host Isolated\n");
+				break;
+			case 9:
+				printf("Communication with Destination Network is Administratively Prohibited\n");
+				break;
+			case 10:
+				printf("Communication with Destination Host is Administratively Prohibited\n");
+				break;
+			case 11:
+				printf("Destination Network Unreachable for Type of Service\n");
+				break;
+			case 12:
+				printf("Destination Host Unreachable for Type of Service\n");
+				break;
+			case 13:
+				printf("Communication Administratively Prohibited\n");
+				break;
+			case 14:
+				printf("Host Precedence Violation\n");
+				break;
+			case 15:
+				printf("Precedence cutoff in effect\n");
+				break;
+			default:
+				break;
+		}
 	}
 
-	//  Todo code and type error check to add here
+	if (rcvd_pckt->hdr.type == 5) {
+
+		switch (rcvd_pckt->hdr.code) {
+			case 0:
+				printf("Redirect Datagram for the Network (or subnet)\n");
+					break;
+			case 1:
+				printf("Redirect Datagram for the Host\n");
+					break;
+			case 2:
+				printf("Redirect Datagram for the Type of Service and Network\n");
+					break;
+			case 3:
+				printf("Redirect Datagram for the Type of Service and Host\n");
+					break;
+			default:
+				break;
+		}
+	}
+
+	if (rcvd_pckt->hdr.type == 9 && rcvd_pckt->hdr.code == 0)
+		printf("Normal router advertisement\n");
+	
+	if (rcvd_pckt->hdr.type == 11) {
+
+		switch (rcvd_pckt->hdr.code) {
+			case 0:
+				printf("Time to Live exceeded in Transit\n");
+				break;
+			case 1:
+				printf("Fragment Reassembly Time Exceeded\n");
+				break;
+		default:
+			break;
+		}
+	}
+
+	if (rcvd_pckt->hdr.type == 12) {
+
+		switch (rcvd_pckt->hdr.code) {
+
+			case 0:
+				printf("The Pointer indicates the error\n");
+				break;
+			case 1:
+				printf("Missing a Required Option\n");
+				break;
+			case 2:
+				printf("Bad Length\n");
+				break;
+			default:
+				break;	
+		}
+	}
+
+	if (rcvd_pckt->hdr.type == 3) {
+
+		switch (rcvd_pckt->hdr.code) {
+
+			case 0:
+				printf("Bad SPI\n");
+				break;
+			case 1:
+				printf("Authentication Failed\n");
+				break;
+			case 2:
+				printf("Decompression Failed\n");
+				break;
+			case 3:
+				printf("Decryption Failed\n");
+				break;
+			case 4:
+				printf("Need Authentication\n");
+				break;
+			case 5:
+				printf("Need Authorization\n");
+				break;
+			default:
+				break;
+		}
+	}
 }

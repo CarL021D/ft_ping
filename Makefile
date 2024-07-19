@@ -7,7 +7,7 @@ SRCS = srcs/ft_ping.c		\
 
 OBJS = ${SRCS:.c=.o}
 
-CFLAGS = -Wall -Werror -Wextra -g3  \
+CFLAGS = -Wall -Werror -Wextra -lm -g3  \
     -O0                             \
     -fsanitize=address              \
     -fsanitize=undefined            \
