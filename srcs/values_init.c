@@ -13,7 +13,6 @@ static int32_t init_icmp_socket() {
 
 void	init_data(t_data *data, char **av) {
 
-	// (void)av;
 	data->ip_addr = resolve_hostname_to_ip(av[1]);
 	if (!data->ip_addr) {
 		
@@ -39,8 +38,6 @@ void	init_data(t_data *data, char **av) {
 		fprintf(stderr, "\n");
 		exit(EXIT_FAILURE);
 	}
-
-
 }
 
 void init_sock_addr(struct sockaddr_in *addr_con, char *ip_addr) {    
@@ -53,10 +50,7 @@ void init_sock_addr(struct sockaddr_in *addr_con, char *ip_addr) {
 
 void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data) {
 
-	// void type for the moment, going to depend on whether we custom the payload size or not
-
 	memset(pckt, 0, sizeof(t_icmp_pckt));
-
 	pckt->hdr.type = ICMP_ECHO;
 	pckt->hdr.code = 0;
 	pckt->hdr.un.echo.id = getpid();

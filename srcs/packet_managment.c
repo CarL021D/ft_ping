@@ -18,22 +18,18 @@ bool cheksums_compar(t_icmp_pckt *sent_pckt, t_icmp_pckt *rcvd_pckt) {
 	return false;
 }
 
-bool analyse_pckt_addr(char *buffer) {
+bool analyse_pckt_addr(t_data *data, char *buffer) {
 
 	struct iphdr *ip_hdr = (struct iphdr *)buffer;
 	struct icmphdr *icmp_hdr = (struct icmphdr *)(buffer + (ip_hdr->ihl * 4));
 	char src_ip[INET_ADDRSTRLEN];
 	char dst_ip[INET_ADDRSTRLEN];
 
-	if (inet_ntop(AF_INET, &ip_hdr->saddr, src_ip, sizeof(src_ip)) == NULL) {
-		perror("inet_ntop src_ip");
-		exit(EXIT_FAILURE);
-	}
+	if (inet_ntop(AF_INET, &ip_hdr->saddr, src_ip, sizeof(src_ip)) == NULL)
+		error_exit_program(data, "inet_ntop src_ip error");
 
-	if (inet_ntop(AF_INET, &ip_hdr->daddr, dst_ip, sizeof(dst_ip)) == NULL) {
-		perror("inet_ntop dst_ip");
-		exit(EXIT_FAILURE);
-	}
+	if (inet_ntop(AF_INET, &ip_hdr->daddr, dst_ip, sizeof(dst_ip)) == NULL)
+		error_exit_program(data, "inet_ntop dst_ip error");
 	if (strcmp(src_ip, dst_ip) || (!strcmp(src_ip, dst_ip) && !icmp_hdr->type))
 		return true;
 	return false;
@@ -48,17 +44,16 @@ void print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, l
 	memcpy(&rcvd_pckt.hdr, icmp_hdr, sizeof(struct icmphdr));
 	memcpy(rcvd_pckt.payload, buffer + (ip_hdr->ihl * 4) + sizeof(struct icmphdr), PAYLOAD_SIZE);
 
-	if (!cheksums_compar(pckt, &rcvd_pckt) && strcmp(data->ip_addr, "127.0.0.1"))
-		printf("CORRUPTED PAYLOAD\n");
-
+	if (!cheksums_compar(pckt, &rcvd_pckt) && strcmp(data->ip_addr, "127.0.0.1")) {
+		fprintf(stderr, "payload got corrupted\n");
+		return;
+	}
 	if (icmp_hdr->type == ICMP_ECHOREPLY && icmp_hdr->un.echo.id == getpid()) {
 		printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3Lf ms\n", data->ip_addr, data->sequence, ip_hdr->ttl, rtt_msec);
 		data->sequence++;
-		return ;
+		return;
 	}
 	packet_rcvd_error_check(&rcvd_pckt);
-
-	(void)pckt;
 }
 
 void packet_rcvd_error_check(t_icmp_pckt *rcvd_pckt) {

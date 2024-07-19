@@ -1,7 +1,5 @@
 #include "../includes/ft_ping.h"
 
-#define PING_PKT_SIZE 64
-
 volatile sig_atomic_t c_sig = 0;
 
 void sig_handler(int _)
@@ -19,24 +17,6 @@ void check_args(int ac) {
 
 	// TODO bonus: options to set here later
 }
-
-long double calculate_average(t_data *data) {
-    long double sum = 0.0;
-    for (int i = 0; i < data->sequence; i++) {
-        sum += data->rtt_arr[i];
-    }
-    return sum / data->sequence;
-}
-
-long double calculate_stddev(t_data *data) {
-    long double avg = calculate_average(data);
-    long double sum_sq_diff = 0.0;
-    for (int i = 0; i < data->sequence; i++) {
-        sum_sq_diff += (data->rtt_arr[i] - avg) * (data->rtt_arr[i] - avg);
-    }
-    return sqrt(sum_sq_diff / data->sequence);
-}
-
 
 void ping_exit_output(t_data *data, char *dns) {
 
@@ -64,12 +44,9 @@ void ping_exit_output(t_data *data, char *dns) {
 void update_data(t_data *data, long double rtt_msec) {
 
 	long double *new_arr = realloc(data->rtt_arr, (data->sequence) * sizeof(long double));
-    if (new_arr == NULL) {
-        perror("Failed to reallocate memory");
-		close(data->sockfd);
-        free(data->rtt_arr);
-        exit(EXIT_FAILURE);
-    }
+    if (!new_arr)
+		error_exit_program(data, "failed to reallocate memory");
+
     data->rtt_arr = new_arr;
     data->rtt_arr[data->sequence - 1] = rtt_msec;
 }
@@ -84,20 +61,15 @@ void ping(t_data *data, struct sockaddr_in *addr_con) {
 	init_icmp_pckt(&pckt, data);
 	clock_gettime(CLOCK_MONOTONIC, &time_start);
 
-    if (sendto(data->sockfd, &pckt, sizeof(t_icmp_pckt), 0, (struct sockaddr *)addr_con, sizeof(*addr_con)) <= 0) {
-        perror("sendto");
-        exit(EXIT_FAILURE);
-    }
+    if (sendto(data->sockfd, &pckt, sizeof(t_icmp_pckt), 0, (struct sockaddr *)addr_con, sizeof(*addr_con)) <= 0)
+		error_exit_program(data, "sendto error");
 	data->sent_pckt_count++;
 	memset(buffer, 0,sizeof(buffer));
 
 	while (1) {
-		if (recvfrom(data->sockfd, buffer, sizeof(buffer), 0,
-				(struct sockaddr *)addr_con, &addr_len) <= 0) {
-			perror("recvfrom");
-			exit(EXIT_FAILURE);
-		}
-		if (analyse_pckt_addr(buffer))
+		if (recvfrom(data->sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)addr_con, &addr_len) <= 0)
+			error_exit_program(data, "recvfrom error");
+		if (analyse_pckt_addr(data, buffer))
 			break;
 	}
 	data->rcvd_pckt_count++;

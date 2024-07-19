@@ -47,9 +47,24 @@ long double get_ping_duration(struct timespec *time_start, struct timespec *time
 	return rtt_msec;
 }
 
-void print_packet_content(t_data *data, t_icmp_pckt *pckt) {
+long double calculate_average(t_data *data) {
+    long double sum = 0.0;
+    for (int i = 0; i < data->sequence; i++) {
+        sum += data->rtt_arr[i];
+    }
+    return sum / data->sequence;
+}
 
-	(void)data;
+long double calculate_stddev(t_data *data) {
+    long double avg = calculate_average(data);
+    long double sum_sq_diff = 0.0;
+    for (int i = 0; i < data->sequence; i++) {
+        sum_sq_diff += (data->rtt_arr[i] - avg) * (data->rtt_arr[i] - avg);
+    }
+    return sqrt(sum_sq_diff / data->sequence);
+}
+
+void print_packet_content(t_data *data, t_icmp_pckt *pckt) {
 
 	printf("\npckt type: %d\n",pckt->hdr.type);
 	printf("pckt code: %d\n", pckt->hdr.code);

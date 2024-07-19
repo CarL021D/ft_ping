@@ -46,18 +46,20 @@ void	init_sock_addr(struct sockaddr_in *addr_con, char *ip_addr);
 void	init_data(t_data *data, char **av);
 void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data);
 
-bool cheksums_compar(t_icmp_pckt *sent_pckt, t_icmp_pckt *rcvd_pckt);
-bool analyse_pckt_addr(char *buffer);
-void print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, long double rtt_msec);
-void packet_rcvd_error_check(t_icmp_pckt *rcvd_pckt);
+bool	cheksums_compar(t_icmp_pckt *sent_pckt, t_icmp_pckt *rcvd_pckt);
+bool	analyse_pckt_addr(t_data *data, char *buffer);
+void	print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, long double rtt_msec);
+void	packet_rcvd_error_check(t_icmp_pckt *rcvd_pckt);
 
-void update_data(t_data *data, long double rtt_msec);
-
+// void	update_data(t_data *data, long double rtt_msec);
 
 unsigned short 	checksum(void *b, int len);   
 char			*resolve_hostname_to_ip(const char *hostname);
 long double		get_ping_duration(struct timespec *time_start, struct timespec *time_end);
+long double		calculate_average(t_data *data);
+long double		calculate_stddev(t_data *data);
 void			print_packet_content(t_data *data, t_icmp_pckt *pckt);
 
+void	error_exit_program(t_data *data, char *error_message);
 
 #endif
