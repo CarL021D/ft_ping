@@ -44,7 +44,7 @@ void print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, l
 	memcpy(&rcvd_pckt.hdr, icmp_hdr, sizeof(struct icmphdr));
 	memcpy(rcvd_pckt.payload, buffer + (ip_hdr->ihl * 4) + sizeof(struct icmphdr), PAYLOAD_SIZE);
 
-	if (!cheksums_compar(pckt, &rcvd_pckt) && strcmp(data->ip_addr, "127.0.0.1")) {
+	if (!cheksums_compar(pckt, &rcvd_pckt)) {
 		fprintf(stderr, "payload got corrupted\n");
 		return;
 	}
