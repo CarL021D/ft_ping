@@ -44,6 +44,9 @@ void print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, l
 	memcpy(&rcvd_pckt.hdr, icmp_hdr, sizeof(struct icmphdr));
 	memcpy(rcvd_pckt.payload, buffer + (ip_hdr->ihl * 4) + sizeof(struct icmphdr), PAYLOAD_SIZE);
 
+	printf("---> %u\n", ntohs(icmp_hdr->un.echo.id));
+	printf("---> 0x%04x\n", ntohs(icmp_hdr->un.echo.id));
+
 	if (!cheksums_compar(pckt, &rcvd_pckt)) {
 		fprintf(stderr, "payload got corrupted\n");
 		return;

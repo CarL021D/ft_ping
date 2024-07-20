@@ -11,12 +11,12 @@ static int32_t init_icmp_socket() {
     return sockfd;
 }
 
-void	init_data(t_data *data, char **av) {
+void	init_data(t_data *data, int ac, char **av) {
 
-	data->ip_addr = resolve_hostname_to_ip(av[1]);
+	data->ip_addr = resolve_hostname_to_ip(av[ac - 1]);
 	if (!data->ip_addr) {
 		
-		fprintf(stderr, "Failed to resolve hostname %s\n", av[1]);
+		fprintf(stderr, "Failed to resolve hostname %s\n", av[ac - 1]);
 		exit(EXIT_FAILURE);
 	}
 

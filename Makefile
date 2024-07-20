@@ -1,9 +1,10 @@
 NAME = ft_ping
 
-SRCS = srcs/ft_ping.c			\
-       srcs/values_init.c		\
-       srcs/packet_managment.c	\
-       srcs/error_handler.c		\
+SRCS = srcs/ft_ping.c			    \
+       srcs/values_init.c	        \
+       srcs/packet_managment.c      \
+       srcs/error_handler.c	        \
+       srcs/ping_options_manager.c	\
 	   srcs/utils.c
 
 OBJS = ${SRCS:.c=.o}

@@ -8,14 +8,12 @@ void sig_handler(int _)
 	c_sig = 1;
 }
 
-void check_args(int ac) {
+void check_args_count(int ac) {
 
 	if (ac < 2) {
 		fprintf(stderr, "not enough arguments\n");
 		exit(EXIT_FAILURE);
 	}
-
-	// TODO bonus: options to set here later
 }
 
 void ping_exit_output(t_data *data, char *dns) {
@@ -52,6 +50,7 @@ void update_data(t_data *data, long double rtt_msec) {
 }
 
 void ping(t_data *data, struct sockaddr_in *addr_con) {
+	
 	t_icmp_pckt pckt;
 	struct timespec time_start, time_end;
 	socklen_t addr_len = sizeof(*addr_con);
@@ -64,7 +63,7 @@ void ping(t_data *data, struct sockaddr_in *addr_con) {
     if (sendto(data->sockfd, &pckt, sizeof(t_icmp_pckt), 0, (struct sockaddr *)addr_con, sizeof(*addr_con)) <= 0)
 		error_exit_program(data, "sendto error");
 	data->sent_pckt_count++;
-	memset(buffer, 0,sizeof(buffer));
+	memset(buffer, 0, sizeof(buffer));
 
 	while (1) {
 		if (recvfrom(data->sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)addr_con, &addr_len) <= 0)
@@ -78,25 +77,74 @@ void ping(t_data *data, struct sockaddr_in *addr_con) {
 	update_data(data, rtt_msec);
 }
 
+void cmd_options_handler(t_option *options_list, t_data *data, int ac, char **av) {
+
+	memset(options_list, 0, sizeof(t_option));
+
+	for (uint8_t i = 1; i < ac; i++)
+		if (!strcmp(av[i], "-?") || !strcmp(av[i], "--help"))
+			print_help_option(data);
+
+	for (uint8_t i = 1; i < (ac - 1); i++) {
+
+		// if (!strcmp(av[i], "-v"))
+		// 	options_list->v = 1;
+			
+		if(!av[i + 1])
+			arg_error_exit_program(data);
+		
+		for (uint8_t j = 0; av[i][j]; j++) {
+
+			if (!isdigit(av[i][j]))
+				arg_error_exit_program(data);
+		}
+
+		// if (!strcmp(av[i], "-f"))
+		// 	options_list->v = 1;
+		// if (!strcmp(av[i], "-l"))
+		// 	options_list->v = 1;
+		// if (!strcmp(av[i], "-n"))
+		// 	options_list->v = 1;
+		// if (!strcmp(av[i], "-w"))
+		// 	options_list->v = 1;
+		// if (!strcmp(av[i], "-W"))
+		// 	options_list->v = 1;
+		// if (!strcmp(av[i], "-p"))
+		// 	options_list->v = 1;
+		// if (!strcmp(av[i], "-r"))
+		// 	options_list->v = 1;
+		// if (!strcmp(av[i], "-s"))
+		// 	options_list->v = 1;
+		// if (!strcmp(av[i], "-T"))
+		// 	options_list->v = 1;
+		// if (!strcmp(av[i], "-ttl"))
+		// 	options_list->v = 1;
+		// if (!strcmp(av[i], "--ip-timestamp"))
+		// 	options_list->v = 1;		
+	}
+}
+
 int main(int ac, char **av) {
 
 	t_data				data;
+	t_option			options;
 	struct sockaddr_in	addr_con;
 
 	signal(SIGINT, sig_handler);
 
-	check_args(ac);
-	init_data(&data, av);
+	check_args_count(ac);
+
+	cmd_options_handler(&options, &data, ac, av);
+	init_data(&data, ac, av);
 	init_sock_addr(&addr_con, data.ip_addr);
-	printf("PING %s (%s): %hu data bytes\n", av[1], data.ip_addr, data.icmp_pckt_size);
+	printf("PING %s (%s): %hu data bytes\n", av[ac - 1], data.ip_addr, data.icmp_pckt_size);
 
 	while (!c_sig) {
 		ping(&data, &addr_con);
 		usleep(data.sleep_time * 1000000);
 	}
 
-	ping_exit_output(&data, av[1]);
+	ping_exit_output(&data, av[ac - 1]);
 	free(data.rtt_arr);
 	close(data.sockfd);
-	return 0;
 }

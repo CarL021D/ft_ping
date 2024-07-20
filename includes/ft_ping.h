@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <unistd.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -33,17 +34,33 @@ typedef struct	s_data {
 	uint16_t		rcvd_pckt_count;
 	uint16_t    	sequence;
 	long double		*rtt_arr;
-}				t_data;
+}			t_data;
+
+typedef struct s_option {
+
+	uint8_t v;
+	uint8_t f;
+	uint8_t l;
+	uint8_t n;
+	uint8_t w;
+	uint8_t W;
+	uint8_t p;
+	uint8_t r;
+	uint8_t s;
+	uint8_t T;
+	uint8_t ttl;
+	uint8_t ip_timestamp;
+}			t_option;	
 
 typedef struct	s_icmp_pckt {
 
 	struct icmphdr	hdr;
 	char payload[PAYLOAD_SIZE];
-}				t_icmp_pckt;
+}			t_icmp_pckt;
 
 
 void	init_sock_addr(struct sockaddr_in *addr_con, char *ip_addr);
-void	init_data(t_data *data, char **av);
+void	init_data(t_data *data, int ac, char **av);
 void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data);
 
 bool	cheksums_compar(t_icmp_pckt *sent_pckt, t_icmp_pckt *rcvd_pckt);
@@ -60,6 +77,9 @@ long double		calculate_average(t_data *data);
 long double		calculate_stddev(t_data *data);
 void			print_packet_content(t_data *data, t_icmp_pckt *pckt);
 
+void	print_help_option();
+
+void	arg_error_exit_program();
 void	error_exit_program(t_data *data, char *error_message);
 
 #endif
