@@ -83,6 +83,12 @@ void cmd_options_init(t_data *data, int ac, char **av) {
 			continue;
 		}
 
+		if (!strcmp(av[i], "-q")) {
+			data->option.q = 1;
+			i--;
+			continue;
+		}
+
 		if (!strcmp(av[i], "-f")) {
 			data->option.f = 1;
 			return;

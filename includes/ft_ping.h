@@ -36,6 +36,7 @@ typedef struct s_option {
 	uint8_t s;
 	uint8_t T;
 	uint8_t ttl;
+	uint8_t q;
 	uint8_t ip_timestamp;
 }			t_option;
 

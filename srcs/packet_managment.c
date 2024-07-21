@@ -54,7 +54,9 @@ void print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, l
 		return;
 	}
 	if (icmp_hdr->type == ICMP_ECHOREPLY && icmp_hdr->un.echo.id == getpid()) {
-		printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3Lf ms\n", data->ip_addr, data->sequence, ip_hdr->ttl, rtt_msec);
+		if (!data->option.q)
+			printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3Lf ms\n",
+					data->ip_addr, data->sequence, ip_hdr->ttl, rtt_msec);
 		data->sequence++;
 		return;
 	}
