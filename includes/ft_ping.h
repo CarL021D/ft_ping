@@ -82,8 +82,9 @@ long double		calculate_average(t_data *data);
 long double		calculate_stddev(t_data *data);
 void			print_packet_content(t_data *data, t_icmp_pckt *pckt);
 
-void	help_option_exec();
+bool	n_option_exec(t_data *data);
 void	v_option_exec(t_data *data, char *buffer);
+void	help_option_exec();
 
 void	arg_error_exit_program();
 void	error_exit_program(t_data *data, char *error_message);

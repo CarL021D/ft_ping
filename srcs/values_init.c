@@ -88,20 +88,19 @@ void cmd_options_init(t_data *data, int ac, char **av) {
 			return;
 		}
 
-		for (uint8_t j = 0; av[i + 1][j]; j++) {
-
-			if (!isdigit(av[i + 1][j])) {
-				printf("AAAAAAAAAAAAAA\n");
+		for (uint8_t j = 0; av[i + 1][j]; j++)
+			if (!isdigit(av[i + 1][j]))
 				arg_error_exit_program(data);
-			}
-		}
 
 		if (!strcmp(av[i], "-l")) {
 			data->option.l = atoi(av[i + 1]);
 			return;
 		}
 
-
+		if (!strcmp(av[i], "-n")) {
+			data->option.n = atoi(av[i + 1]);
+			return;
+		}
 
 		// if (!strcmp(av[i], "-f"))
 		// 	data->options_strct->v = 1;

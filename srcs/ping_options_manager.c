@@ -1,5 +1,15 @@
 #include "../includes/ft_ping.h"
 
+bool n_option_exec(t_data *data) {
+
+    if (!data->option.n)
+        return (false);
+
+    if (data->sent_pckt_count >= data->option.n)
+        return (true);
+    return (false);
+}
+
 void v_option_exec(t_data *data, char *buffer) {
 
     static uint8_t i = 0;

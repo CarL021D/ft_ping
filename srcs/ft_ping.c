@@ -104,7 +104,7 @@ int main(int ac, char **av) {
 		printf("PING %s (%s): %hu data bytes\n", av[ac - 1],
 				data.ip_addr, data.icmp_pckt_size);
 
-	while (!c_sig) {
+	while (!c_sig && !n_option_exec(&data)) {
 		ping(&data, &addr_con);
 		usleep(data.sleep_time * 1000000);
 	}
