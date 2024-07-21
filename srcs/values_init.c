@@ -1,5 +1,4 @@
 #include "../includes/ft_ping.h"
-// #include "ip_icmp.h"
 
 static int32_t init_icmp_socket() {
 
@@ -29,7 +28,12 @@ void	init_data(t_data *data, int ac, char **av) {
 		exit(EXIT_FAILURE);
 	}
 	data->payload_size = 56;	// to adjust depending on the command option
-	data->sleep_time = 1;		// to adjust depending on the command option
+	
+	if (data->option.f)
+		data->sleep_time = 0.000001;
+	else
+		data->sleep_time = 1;		// to adjust depending on the command option
+			// to adjust depending on the command option
 	data->dns_name = av[ac - 1];
 	data->icmp_pckt_size =  sizeof(struct icmphdr) + data->payload_size;
 	data->sent_pckt_count = 0;
@@ -79,6 +83,11 @@ void cmd_options_init(t_data *data, int ac, char **av) {
 			data->option.v = 1;
 			i--;
 			continue;
+		}
+
+		if (!strcmp(av[i], "-f")) {
+			data->option.f = 1;
+			return;
 		}
 
 		for (uint8_t j = 0; av[i][j]; j++) {

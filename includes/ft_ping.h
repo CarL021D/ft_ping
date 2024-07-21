@@ -43,7 +43,7 @@ typedef struct	s_data {
 
 	int32_t			sockfd;
 	uint8_t    		payload_size;
-	uint32_t		sleep_time;
+	double		sleep_time;
 	char			*dns_name;
 	char 			*ip_addr;
 	uint16_t   		icmp_pckt_size;
