@@ -54,6 +54,9 @@ void update_data(t_data *data, long double rtt_msec) {
 
     data->rtt_arr = new_arr;
     data->rtt_arr[data->sequence - 1] = rtt_msec;
+
+	if (data->option.l && (data->sent_pckt_count >= data->option.l))
+		data->sleep_time = 1;
 }
 
 void ping(t_data *data, struct sockaddr_in *addr_con) {

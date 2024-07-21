@@ -27,13 +27,11 @@ void	init_data(t_data *data, int ac, char **av) {
 		fprintf(stderr, "Failed to initialize socket\n");
 		exit(EXIT_FAILURE);
 	}
-	data->payload_size = 56;	// to adjust depending on the command option
-	
-	if (data->option.f)
+	data->payload_size = 56;
+	if (data->option.f || data->option.l)
 		data->sleep_time = 0.000001;
 	else
-		data->sleep_time = 1;		// to adjust depending on the command option
-			// to adjust depending on the command option
+		data->sleep_time = 1;		
 	data->dns_name = av[ac - 1];
 	data->icmp_pckt_size =  sizeof(struct icmphdr) + data->payload_size;
 	data->sent_pckt_count = 0;
@@ -90,12 +88,20 @@ void cmd_options_init(t_data *data, int ac, char **av) {
 			return;
 		}
 
-		for (uint8_t j = 0; av[i][j]; j++) {
+		for (uint8_t j = 0; av[i + 1][j]; j++) {
 
-			if (!isdigit(av[i][j])) {
+			if (!isdigit(av[i + 1][j])) {
+				printf("AAAAAAAAAAAAAA\n");
 				arg_error_exit_program(data);
 			}
 		}
+
+		if (!strcmp(av[i], "-l")) {
+			data->option.l = atoi(av[i + 1]);
+			return;
+		}
+
+
 
 		// if (!strcmp(av[i], "-f"))
 		// 	data->options_strct->v = 1;
