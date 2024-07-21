@@ -53,6 +53,18 @@ void init_sock_addr(struct sockaddr_in *addr_con, char *ip_addr) {
 	addr_con->sin_addr.s_addr = inet_addr(ip_addr);
 }
 
+// void fill_payload(t_data *data) {
+
+// 	if (!data->option.p) {
+// 		for (uint16_t i = 0; i < data->payload_size - 1; i++)
+//         	pckt->payload[i] = (rand() % 95) + 32;
+//     	pckt->payload[data->payload_size - 1] = '\0';
+// 		return;
+// 	}
+
+
+// }
+
 void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data) {
 
 	memset(pckt, 0, sizeof(t_icmp_pckt));
@@ -62,9 +74,8 @@ void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data) {
 	pckt->hdr.checksum = 0;
 	pckt->hdr.un.echo.sequence = data->sequence;
 
-	for (uint16_t i = 0; i < data->payload_size - 1; i++) {
+	for (uint16_t i = 0; i < data->payload_size - 1; i++)
         pckt->payload[i] = (rand() % 95) + 32;
-    }
     pckt->payload[data->payload_size - 1] = '\0';
 	pckt->hdr.checksum = checksum(pckt, sizeof(t_icmp_pckt));
 }

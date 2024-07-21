@@ -45,6 +45,7 @@ typedef struct	s_data {
 	uint16_t		rcvd_pckt_count;
 	uint16_t    	sequence;
 	long double		*rtt_arr;
+	char			*opt_p_payload;
 	t_option		option;
 }			t_data;
 
