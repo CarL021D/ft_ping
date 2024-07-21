@@ -8,11 +8,18 @@ void sig_handler(int _)
 	c_sig = 1;
 }
 
-void check_args_count(int ac) {
+void check_args_count(int ac, char **av) {
 
 	if (ac < 2) {
 		fprintf(stderr, "not enough arguments\n");
 		exit(EXIT_FAILURE);
+	}
+
+	for (uint8_t i = 1; i < ac; i++) {
+		if (!strcmp(av[i], "-?") || !strcmp(av[i], "--help")) {
+			help_option_exec();
+    		exit(EXIT_SUCCESS);
+		}
 	}
 }
 
@@ -62,6 +69,8 @@ void ping(t_data *data, struct sockaddr_in *addr_con) {
 
     if (sendto(data->sockfd, &pckt, sizeof(t_icmp_pckt), 0, (struct sockaddr *)addr_con, sizeof(*addr_con)) <= 0)
 		error_exit_program(data, "sendto error");
+	if (data->option.v)
+		v_option_exec(data, buffer);
 	data->sent_pckt_count++;
 	memset(buffer, 0, sizeof(buffer));
 
@@ -77,67 +86,20 @@ void ping(t_data *data, struct sockaddr_in *addr_con) {
 	update_data(data, rtt_msec);
 }
 
-void cmd_options_handler(t_option *options_list, t_data *data, int ac, char **av) {
-
-	memset(options_list, 0, sizeof(t_option));
-
-	for (uint8_t i = 1; i < ac; i++)
-		if (!strcmp(av[i], "-?") || !strcmp(av[i], "--help"))
-			print_help_option(data);
-
-	for (uint8_t i = 1; i < (ac - 1); i++) {
-
-		// if (!strcmp(av[i], "-v"))
-		// 	options_list->v = 1;
-			
-		if(!av[i + 1])
-			arg_error_exit_program(data);
-		
-		for (uint8_t j = 0; av[i][j]; j++) {
-
-			if (!isdigit(av[i][j]))
-				arg_error_exit_program(data);
-		}
-
-		// if (!strcmp(av[i], "-f"))
-		// 	options_list->v = 1;
-		// if (!strcmp(av[i], "-l"))
-		// 	options_list->v = 1;
-		// if (!strcmp(av[i], "-n"))
-		// 	options_list->v = 1;
-		// if (!strcmp(av[i], "-w"))
-		// 	options_list->v = 1;
-		// if (!strcmp(av[i], "-W"))
-		// 	options_list->v = 1;
-		// if (!strcmp(av[i], "-p"))
-		// 	options_list->v = 1;
-		// if (!strcmp(av[i], "-r"))
-		// 	options_list->v = 1;
-		// if (!strcmp(av[i], "-s"))
-		// 	options_list->v = 1;
-		// if (!strcmp(av[i], "-T"))
-		// 	options_list->v = 1;
-		// if (!strcmp(av[i], "-ttl"))
-		// 	options_list->v = 1;
-		// if (!strcmp(av[i], "--ip-timestamp"))
-		// 	options_list->v = 1;		
-	}
-}
-
 int main(int ac, char **av) {
 
 	t_data				data;
-	t_option			options;
 	struct sockaddr_in	addr_con;
 
 	signal(SIGINT, sig_handler);
 
-	check_args_count(ac);
+	check_args_count(ac, av);
 
-	cmd_options_handler(&options, &data, ac, av);
 	init_data(&data, ac, av);
 	init_sock_addr(&addr_con, data.ip_addr);
-	printf("PING %s (%s): %hu data bytes\n", av[ac - 1], data.ip_addr, data.icmp_pckt_size);
+	if (!data.option.v)
+		printf("PING %s (%s): %hu data bytes\n", av[ac - 1],
+				data.ip_addr, data.icmp_pckt_size);
 
 	while (!c_sig) {
 		ping(&data, &addr_con);

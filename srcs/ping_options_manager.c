@@ -1,6 +1,19 @@
 #include "../includes/ft_ping.h"
 
-void print_help_option() {
+void v_option_exec(t_data *data, char *buffer) {
+
+    static uint8_t i = 0;
+	struct iphdr *ip_hdr = (struct iphdr *)buffer;
+	struct icmphdr *icmp_hdr = (struct icmphdr *)(buffer + (ip_hdr->ihl * 4));
+    
+    if (!i) {
+        printf("PING %s (%s): %hu data bytes, id 0x%04x = %u\n", data->dns_name,
+            data->ip_addr, data->icmp_pckt_size, ntohs(icmp_hdr->un.echo.id), ntohs(icmp_hdr->un.echo.id));
+        i++;
+    }
+}
+
+void help_option_exec() {
 
     printf("    Usage: ping [OPTION...] HOST ...\n");
     printf("Send ICMP ECHO_REQUEST packets to network hosts.\n\n");
@@ -47,5 +60,4 @@ void print_help_option() {
     printf("Options marked with (root only) are available only to superuser.\n\n");
 
     printf("Report bugs to <bug-inetutils@gnu.org>\n");
-    exit(EXIT_SUCCESS);
 }
