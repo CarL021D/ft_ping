@@ -23,9 +23,9 @@ void check_args_count(int ac, char **av) {
 	}
 }
 
-void ping_exit_output(t_data *data, char *dns) {
+void ping_exit_output(t_data *data) {
 
-	printf("--- %s ping statistics ---\n",dns);
+	printf("--- %s ping statistics ---\n", data->dns_name);
 	uint8_t pckts_success_rate = 100 - ((data->sent_pckt_count / data->rcvd_pckt_count) * 100);
 	printf("%d packets transmitted, %d packets received, %d%% packets lost\n",
 		data->sent_pckt_count, data->rcvd_pckt_count, pckts_success_rate);
@@ -101,15 +101,15 @@ int main(int ac, char **av) {
 	init_data(&data, ac, av);
 	init_sock_addr(&addr_con, data.ip_addr);
 	if (!data.option.v)
-		printf("PING %s (%s): %hu data bytes\n", av[ac - 1],
+		printf("PING %s (%s): %hu data bytes\n", data.dns_name,
 				data.ip_addr, data.icmp_pckt_size);
 
-	while (!c_sig && !n_option_exec(&data)) {
+	while (!c_sig && !c_option_exec(&data)) {
 		ping(&data, &addr_con);
 		usleep(data.sleep_time * 1000000);
 	}
 
-	ping_exit_output(&data, av[ac - 1]);
+	ping_exit_output(&data);
 	free(data.rtt_arr);
 	close(data.sockfd);
 }

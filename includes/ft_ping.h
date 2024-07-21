@@ -28,16 +28,9 @@ typedef struct s_option {
 	uint8_t v;
 	uint8_t f;
 	uint8_t l;
-	uint8_t n;
-	uint8_t w;
-	uint8_t W;
-	uint8_t p;
-	uint8_t r;
-	uint8_t s;
-	uint8_t T;
-	uint8_t ttl;
+	uint8_t c;
 	uint8_t q;
-	uint8_t ip_timestamp;
+	uint8_t p;
 }			t_option;
 
 typedef struct	s_data {
@@ -83,7 +76,7 @@ long double		calculate_average(t_data *data);
 long double		calculate_stddev(t_data *data);
 void			print_packet_content(t_data *data, t_icmp_pckt *pckt);
 
-bool	n_option_exec(t_data *data);
+bool	c_option_exec(t_data *data);
 void	v_option_exec(t_data *data, char *buffer);
 void	help_option_exec();
 

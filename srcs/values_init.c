@@ -103,8 +103,8 @@ void cmd_options_init(t_data *data, int ac, char **av) {
 			return;
 		}
 
-		if (!strcmp(av[i], "-n")) {
-			data->option.n = atoi(av[i + 1]);
+		if (!strcmp(av[i], "-c")) {
+			data->option.c = atoi(av[i + 1]);
 			return;
 		}
 

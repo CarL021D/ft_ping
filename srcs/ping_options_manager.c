@@ -1,11 +1,11 @@
 #include "../includes/ft_ping.h"
 
-bool n_option_exec(t_data *data) {
+bool c_option_exec(t_data *data) {
 
-    if (!data->option.n)
+    if (!data->option.c)
         return (false);
 
-    if (data->sent_pckt_count >= data->option.n)
+    if (data->sent_pckt_count >= data->option.c)
         return (true);
     return (false);
 }

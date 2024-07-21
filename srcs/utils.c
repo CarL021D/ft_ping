@@ -1,6 +1,4 @@
 #include "../includes/ft_ping.h"
-// #include "../includes/ip_icmp.h"
-// #include "../includes/ip.h"
 
 unsigned short checksum(void *b, int len) {
 	unsigned short *buf = b; 
