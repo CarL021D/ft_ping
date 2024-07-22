@@ -90,7 +90,6 @@ void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data) {
 
 void cmd_options_init(t_data *data, int ac, char **av) {
 
-
 	for (uint8_t i = 1; i < (ac - 1); i += 2) {
 		
 		if(!av[i + 1])
@@ -122,8 +121,6 @@ void cmd_options_init(t_data *data, int ac, char **av) {
 					arg_error_exit_program(data);
 			continue;
 		}
-		
-
 
 		for (uint8_t j = 0; av[i + 1][j]; j++)
 			if (!isdigit(av[i + 1][j]))
@@ -138,29 +135,5 @@ void cmd_options_init(t_data *data, int ac, char **av) {
 			data->option.c = atoi(av[i + 1]);
 			return;
 		}
-
-
-		// if (!strcmp(av[i], "-f"))
-		// 	data->options_strct->v = 1;
-		// if (!strcmp(av[i], "-l"))
-		// 	data->options_strct->v = 1;
-		// if (!strcmp(av[i], "-n"))
-		// 	data->options_strct->v = 1;
-		// if (!strcmp(av[i], "-w"))
-		// 	data->options_strct->v = 1;
-		// if (!strcmp(av[i], "-W"))
-		// 	data->options_strct->v = 1;
-		// if (!strcmp(av[i], "-p"))
-		// 	data->options_strct->v = 1;
-		// if (!strcmp(av[i], "-r"))
-		// 	data->options_strct->v = 1;
-		// if (!strcmp(av[i], "-s"))
-		// 	data->options_strct->v = 1;
-		// if (!strcmp(av[i], "-T"))
-		// 	data->options_strct->v = 1;
-		// if (!strcmp(av[i], "-ttl"))
-		// 	data->options_strct->v = 1;
-		// if (!strcmp(av[i], "--ip-timestamp"))
-		// 	data->options_strct->v = 1;		
 	}
 }

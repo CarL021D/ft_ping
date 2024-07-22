@@ -38,7 +38,7 @@ typedef struct	s_data {
 
 	int32_t			sockfd;
 	uint8_t    		payload_size;
-	double		sleep_time;
+	double			sleep_time;
 	char			*dns_name;
 	char 			*ip_addr;
 	uint16_t   		icmp_pckt_size;
@@ -63,13 +63,10 @@ void	init_data(t_data *data, int ac, char **av);
 void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data);
 void 	cmd_options_init(t_data *data, int ac, char **av);
 
-
 bool	cheksums_compar(t_icmp_pckt *sent_pckt, t_icmp_pckt *rcvd_pckt);
 bool	analyse_pckt_addr(t_data *data, char *buffer);
 void	print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, long double rtt_msec);
 void	packet_rcvd_error_check(t_icmp_pckt *rcvd_pckt);
-
-// void	update_data(t_data *data, long double rtt_msec);
 
 unsigned short 	checksum(void *b, int len);   
 char			*resolve_hostname_to_ip(const char *hostname);

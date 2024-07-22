@@ -95,9 +95,7 @@ int main(int ac, char **av) {
 	struct sockaddr_in	addr_con;
 
 	signal(SIGINT, sig_handler);
-
 	check_args_count(ac, av);
-
 	init_data(&data, ac, av);
 	init_sock_addr(&addr_con, data.ip_addr);
 	if (!data.option.v)
