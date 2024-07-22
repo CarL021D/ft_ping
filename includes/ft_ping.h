@@ -21,7 +21,6 @@
 #define MAX_PACKET_SIZE 1024
 #define PAYLOAD_SIZE 58
 #define PING_PKT_SIZE 64
-#define PING_DELAY 1000000
 
 typedef struct s_option {
 
@@ -30,7 +29,7 @@ typedef struct s_option {
 	uint8_t l;
 	uint8_t c;
 	uint8_t q;
-	uint8_t p;
+	uint8_t i;
 	char	*p_payload;
 }			t_option;
 
