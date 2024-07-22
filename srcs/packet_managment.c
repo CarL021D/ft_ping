@@ -8,10 +8,10 @@ bool cheksums_compar(t_icmp_pckt *sent_pckt, t_icmp_pckt *rcvd_pckt) {
 	checksum(rcvd_pckt, sizeof(struct icmphdr) + PAYLOAD_SIZE);
 	rcvd_checksum = checksum(rcvd_pckt, sizeof(struct icmphdr) + PAYLOAD_SIZE);
 
-	// printf("Sent payload ------>   %s\n", sent_pckt->payload);
-	// printf("Received payload  ------>   %s\n", rcvd_pckt->payload);
-	// printf("Sent ICMP checksum ------>   %d\n", sent_pckt->hdr.checksum);
-	// printf("Received ICMP checksum ------>   %d\n", rcvd_checksum);
+	printf("Sent payload ------>   %s\n", sent_pckt->payload);
+	printf("Received payload  ------>   %s\n", rcvd_pckt->payload);
+	printf("Sent ICMP checksum ------>   %d\n", sent_pckt->hdr.checksum);
+	printf("Received ICMP checksum ------>   %d\n", rcvd_checksum);
 
 	if (sent_pckt->hdr.checksum == rcvd_checksum - 8)
 		return true;

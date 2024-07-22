@@ -53,17 +53,27 @@ void init_sock_addr(struct sockaddr_in *addr_con, char *ip_addr) {
 	addr_con->sin_addr.s_addr = inet_addr(ip_addr);
 }
 
-// void fill_payload(t_data *data) {
+static void fill_payload(t_icmp_pckt *pckt, t_data *data) {
 
-// 	if (!data->option.p) {
-// 		for (uint16_t i = 0; i < data->payload_size - 1; i++)
-//         	pckt->payload[i] = (rand() % 95) + 32;
-//     	pckt->payload[data->payload_size - 1] = '\0';
-// 		return;
-// 	}
+	if (!data->option.p) {
+		for (uint16_t i = 0; i < data->payload_size - 1; i++)
+        	pckt->payload[i] = (rand() % 95) + 32;
+    	pckt->payload[data->payload_size - 1] = '\0';
+		return;
+	}
 
+	uint8_t i = 0;
+	for (uint16_t j = 0; j < data->payload_size - 1; j++) {
 
-// }
+        pckt->payload[j] = data->option.p_payload[i];		
+		if (i > 14 || i >= strlen(data->option.p_payload) - 1) {
+			i = 0;
+			continue;
+		}
+		i++;
+	}
+	pckt->payload[data->payload_size - 1] = '\0';
+}
 
 void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data) {
 
@@ -74,9 +84,7 @@ void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data) {
 	pckt->hdr.checksum = 0;
 	pckt->hdr.un.echo.sequence = data->sequence;
 
-	for (uint16_t i = 0; i < data->payload_size - 1; i++)
-        pckt->payload[i] = (rand() % 95) + 32;
-    pckt->payload[data->payload_size - 1] = '\0';
+	fill_payload(pckt, data);
 	pckt->hdr.checksum = checksum(pckt, sizeof(t_icmp_pckt));
 }
 
@@ -102,8 +110,20 @@ void cmd_options_init(t_data *data, int ac, char **av) {
 
 		if (!strcmp(av[i], "-f")) {
 			data->option.f = 1;
+			i--;
 			return;
 		}
+
+		if (!strcmp(av[i], "-p")) {
+			data->option.p = 1;
+			data->option.p_payload = av[i + 1];
+			for (uint8_t j = 0; av[i + 1][j]; j++)
+				if (!isxdigit(av[i + 1][j]))
+					arg_error_exit_program(data);
+			continue;
+		}
+		
+
 
 		for (uint8_t j = 0; av[i + 1][j]; j++)
 			if (!isdigit(av[i + 1][j]))
@@ -118,6 +138,7 @@ void cmd_options_init(t_data *data, int ac, char **av) {
 			data->option.c = atoi(av[i + 1]);
 			return;
 		}
+
 
 		// if (!strcmp(av[i], "-f"))
 		// 	data->options_strct->v = 1;

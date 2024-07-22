@@ -31,6 +31,7 @@ typedef struct s_option {
 	uint8_t c;
 	uint8_t q;
 	uint8_t p;
+	char	*p_payload;
 }			t_option;
 
 typedef struct	s_data {
