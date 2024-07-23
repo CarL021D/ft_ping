@@ -16,11 +16,8 @@ void	init_data(t_data *data, int ac, char **av) {
 	cmd_options_init(data, ac, av);
 	
 	data->ip_addr = resolve_hostname_to_ip(av[ac - 1]);
-	if (!data->ip_addr) {
-		
-		fprintf(stderr, "Failed to resolve hostname %s\n", av[ac - 1]);
+	if (!data->ip_addr)
 		exit(EXIT_FAILURE);
-	}
 
 	if ((data->sockfd = init_icmp_socket()) < 0) {
 		

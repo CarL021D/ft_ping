@@ -19,7 +19,7 @@
 #include <signal.h>
 
 #define MAX_PACKET_SIZE 1024
-#define PAYLOAD_SIZE 58
+#define PAYLOAD_SIZE 56
 #define PING_PKT_SIZE 64
 
 typedef struct s_option {
@@ -75,7 +75,7 @@ long double		calculate_stddev(t_data *data);
 void			print_packet_content(t_data *data, t_icmp_pckt *pckt);
 
 bool	c_option_exec(t_data *data);
-void	v_option_exec(t_data *data, char *buffer);
+// void	v_option_exec(t_data *data, char *buffer);
 void	help_option_exec();
 
 void	arg_error_exit_program();

@@ -24,7 +24,7 @@ char *resolve_hostname_to_ip(const char *hostname) {
 	hints.ai_socktype = SOCK_STREAM;
 
 	if (getaddrinfo(hostname, NULL, &hints, &res) != 0) {
-		fprintf(stderr, "getaddrinfo error\n");
+		fprintf(stderr, "ping: unknown host\n");
 		return NULL;
 	}
 

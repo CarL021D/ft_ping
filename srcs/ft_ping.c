@@ -18,9 +18,19 @@ void check_args_count(int ac, char **av) {
 	for (uint8_t i = 1; i < ac; i++) {
 		if (!strcmp(av[i], "-?") || !strcmp(av[i], "--help")) {
 			help_option_exec();
-    		exit(EXIT_SUCCESS);
+			exit(EXIT_SUCCESS);
 		}
 	}
+}
+
+void print_ping_first_output(t_data *data) {
+	
+	if (!data->option.v)
+		printf("PING %s (%s): 56 data bytes\n", data->dns_name,
+				data->ip_addr);
+	else
+		printf("PING %s (%s): %hd data bytes, id 0x%04x = %u\n", data->dns_name,
+				data->ip_addr, PAYLOAD_SIZE, getpid(), getpid());
 }
 
 void ping_exit_output(t_data *data) {
@@ -49,11 +59,11 @@ void ping_exit_output(t_data *data) {
 void update_data(t_data *data, long double rtt_msec) {
 
 	long double *new_arr = realloc(data->rtt_arr, (data->sequence) * sizeof(long double));
-    if (!new_arr)
+	if (!new_arr)
 		error_exit_program(data, "failed to reallocate memory");
 
-    data->rtt_arr = new_arr;
-    data->rtt_arr[data->sequence - 1] = rtt_msec;
+	data->rtt_arr = new_arr;
+	data->rtt_arr[data->sequence - 1] = rtt_msec;
 
 	if (data->option.l && (data->sent_pckt_count >= data->option.l))
 		data->sleep_time = 1;
@@ -70,10 +80,8 @@ void ping(t_data *data, struct sockaddr_in *addr_con) {
 	init_icmp_pckt(&pckt, data);
 	clock_gettime(CLOCK_MONOTONIC, &time_start);
 
-    if (sendto(data->sockfd, &pckt, sizeof(t_icmp_pckt), 0, (struct sockaddr *)addr_con, sizeof(*addr_con)) <= 0)
+	if (sendto(data->sockfd, &pckt, sizeof(t_icmp_pckt), 0, (struct sockaddr *)addr_con, sizeof(*addr_con)) <= 0)
 		error_exit_program(data, "sendto error");
-	if (data->option.v)
-		v_option_exec(data, buffer);
 	data->sent_pckt_count++;
 	memset(buffer, 0, sizeof(buffer));
 
@@ -98,10 +106,8 @@ int main(int ac, char **av) {
 	check_args_count(ac, av);
 	init_data(&data, ac, av);
 	init_sock_addr(&addr_con, data.ip_addr);
-	if (!data.option.v)
-		printf("PING %s (%s): %hu data bytes\n", data.dns_name,
-				data.ip_addr, data.icmp_pckt_size);
-
+	print_ping_first_output(&data);
+	
 	while (!c_sig && !c_option_exec(&data)) {
 		ping(&data, &addr_con);
 		usleep(data.sleep_time * 1000000);
