@@ -49,6 +49,7 @@ void print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, l
 		return;
 	}
 
+	// (void)pckt;
 	if (!cheksums_compar(pckt, &rcvd_pckt)) {
 		fprintf(stderr, "payload got corrupted\n");
 		return;
@@ -66,7 +67,8 @@ void print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, l
 void packet_rcvd_error_check(t_icmp_pckt *rcvd_pckt) {
 
 	if (rcvd_pckt->hdr.type == 3) {
-
+		// printf("Destination Unreachable\n");
+		
 		switch (rcvd_pckt->hdr.code) {
 
 			case 0:

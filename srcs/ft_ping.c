@@ -36,9 +36,17 @@ void print_ping_first_output(t_data *data) {
 void ping_exit_output(t_data *data) {
 
 	printf("--- %s ping statistics ---\n", data->dns_name);
-	uint8_t pckts_success_rate = 100 - ((data->sent_pckt_count / data->rcvd_pckt_count) * 100);
-	printf("%d packets transmitted, %d packets received, %d%% packets lost\n",
+	uint8_t pckts_success_rate;
+	
+	if (!data->rcvd_pckt_count && data->sent_pckt_count)
+		pckts_success_rate = 100;
+	else
+		pckts_success_rate = 100 - ((data->sent_pckt_count / data->rcvd_pckt_count) * 100);
+	printf("%d packets transmitted, %d packets received, %d%% packets loss\n",
 		data->sent_pckt_count, data->rcvd_pckt_count, pckts_success_rate);
+
+	if (data->option.v == 2)
+		return;
 
 	long double avrg_rtt, stddev_rtt;
 	long double min_rtt = data->rtt_arr[0], max_rtt = data->rtt_arr[0];
@@ -52,7 +60,7 @@ void ping_exit_output(t_data *data) {
 	avrg_rtt = calculate_average(data);
 	stddev_rtt = calculate_stddev(data);
 
-	printf("round_trip min/avg/max/stddev = %.3Lf/%.3Lf/%.3Lf/%.3Lf\n",
+	printf("round-trip min/avg/max/stddev = %.3Lf/%.3Lf/%.3Lf/%.3Lf\n",
 			min_rtt, avrg_rtt, max_rtt,stddev_rtt);
 }
 
@@ -69,6 +77,24 @@ void update_data(t_data *data, long double rtt_msec) {
 		data->sleep_time = 1;
 }
 
+static bool wait_response(t_data *data)
+{
+	 struct timeval tv = {0, 100000};
+
+	fd_set readfds;
+	FD_ZERO(&readfds);
+	FD_SET(data->sockfd, &readfds);
+
+	int32_t retval = select(data->sockfd + 1, &readfds, NULL, NULL, &tv);
+	if (retval == -1)
+		error_exit_program(data, "select error");
+	else if (!retval) {
+		data->option.v = 2;
+		return false;
+	}
+	return true;
+}
+
 void ping(t_data *data, struct sockaddr_in *addr_con) {
 	
 	t_icmp_pckt pckt;
@@ -83,8 +109,11 @@ void ping(t_data *data, struct sockaddr_in *addr_con) {
 	if (sendto(data->sockfd, &pckt, sizeof(t_icmp_pckt), 0, (struct sockaddr *)addr_con, sizeof(*addr_con)) <= 0)
 		error_exit_program(data, "sendto error");
 	data->sent_pckt_count++;
-	memset(buffer, 0, sizeof(buffer));
 
+	if (!wait_response(data))
+		return;
+
+	memset(buffer, 0, sizeof(buffer));
 	while (1) {
 		if (recvfrom(data->sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)addr_con, &addr_len) <= 0)
 			error_exit_program(data, "recvfrom error");
@@ -107,7 +136,7 @@ int main(int ac, char **av) {
 	init_data(&data, ac, av);
 	init_sock_addr(&addr_con, data.ip_addr);
 	print_ping_first_output(&data);
-	
+
 	while (!c_sig && !c_option_exec(&data)) {
 		ping(&data, &addr_con);
 		usleep(data.sleep_time * 1000000);
