@@ -66,6 +66,11 @@ void ping_exit_output(t_data *data) {
 
 void update_data(t_data *data, long double rtt_msec) {
 
+	if (data->option.l && (data->sent_pckt_count >= data->option.l))
+		data->sleep_time = 1;
+
+	if (data->option.v == 2)
+		return ;
 	long double *new_arr = realloc(data->rtt_arr, (data->sequence) * sizeof(long double));
 	if (!new_arr)
 		error_exit_program(data, "failed to reallocate memory");
@@ -73,8 +78,7 @@ void update_data(t_data *data, long double rtt_msec) {
 	data->rtt_arr = new_arr;
 	data->rtt_arr[data->sequence - 1] = rtt_msec;
 
-	if (data->option.l && (data->sent_pckt_count >= data->option.l))
-		data->sleep_time = 1;
+	(void)rtt_msec;
 }
 
 static bool wait_response(t_data *data)
@@ -114,13 +118,13 @@ void ping(t_data *data, struct sockaddr_in *addr_con) {
 		return;
 
 	memset(buffer, 0, sizeof(buffer));
+
 	while (1) {
 		if (recvfrom(data->sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)addr_con, &addr_len) <= 0)
 			error_exit_program(data, "recvfrom error");
-		if (analyse_pckt_addr(data, buffer))
+		if (compare_pckts_addr(data, buffer))
 			break;
 	}
-	data->rcvd_pckt_count++;
 	rtt_msec = get_ping_duration(&time_start, &time_end);
 	print_rcvd_packet_response(data, buffer, &pckt, rtt_msec);
 	update_data(data, rtt_msec);

@@ -63,9 +63,9 @@ void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data);
 void 	cmd_options_init(t_data *data, int ac, char **av);
 
 bool	cheksums_compar(t_icmp_pckt *sent_pckt, t_icmp_pckt *rcvd_pckt);
-bool	analyse_pckt_addr(t_data *data, char *buffer);
+bool	compare_pckts_addr(t_data *data, char *buffer);
 void	print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, long double rtt_msec);
-void	packet_rcvd_error_check(t_icmp_pckt *rcvd_pckt);
+bool	packet_rcvd_error_check(struct iphdr *ip_hdr, t_icmp_pckt *rcvd_pckt, t_data *data);
 
 unsigned short 	checksum(void *b, int len);   
 char			*resolve_hostname_to_ip(const char *hostname);

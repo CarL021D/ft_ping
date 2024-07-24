@@ -18,7 +18,7 @@ bool cheksums_compar(t_icmp_pckt *sent_pckt, t_icmp_pckt *rcvd_pckt) {
 	return false;
 }
 
-bool analyse_pckt_addr(t_data *data, char *buffer) {
+bool compare_pckts_addr(t_data *data, char *buffer) {
 
 	struct iphdr *ip_hdr = (struct iphdr *)buffer;
 	struct icmphdr *icmp_hdr = (struct icmphdr *)(buffer + (ip_hdr->ihl * 4));
@@ -27,12 +27,13 @@ bool analyse_pckt_addr(t_data *data, char *buffer) {
 
 	if (inet_ntop(AF_INET, &ip_hdr->saddr, src_ip, sizeof(src_ip)) == NULL)
 		error_exit_program(data, "inet_ntop src_ip error");
-
 	if (inet_ntop(AF_INET, &ip_hdr->daddr, dst_ip, sizeof(dst_ip)) == NULL)
 		error_exit_program(data, "inet_ntop dst_ip error");
-	if (strcmp(src_ip, dst_ip) || (!strcmp(src_ip, dst_ip) && !icmp_hdr->type))
-		return true;
-	return false;
+
+	if (!strcmp(src_ip, dst_ip) && icmp_hdr->type == 8)
+		return false;
+
+	return true;
 }
 
 void print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, long double rtt_msec) {
@@ -40,7 +41,7 @@ void print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, l
 	t_icmp_pckt rcvd_pckt;
 	struct iphdr *ip_hdr = (struct iphdr *)buffer;
 	struct icmphdr *icmp_hdr = (struct icmphdr *)(buffer + (ip_hdr->ihl * 4));
-
+	
 	memcpy(&rcvd_pckt.hdr, icmp_hdr, sizeof(struct icmphdr));
 	memcpy(rcvd_pckt.payload, buffer + (ip_hdr->ihl * 4) + sizeof(struct icmphdr), PAYLOAD_SIZE);
 
@@ -48,8 +49,8 @@ void print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, l
 		data->sequence++;
 		return;
 	}
-
-	// (void)pckt;
+	if (packet_rcvd_error_check(ip_hdr, &rcvd_pckt, data))
+		return;
 	if (!cheksums_compar(pckt, &rcvd_pckt)) {
 		fprintf(stderr, "payload got corrupted\n");
 		return;
@@ -58,24 +59,57 @@ void print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, l
 		if (!data->option.q)
 			printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3Lf ms\n",
 					data->ip_addr, data->sequence, ip_hdr->ttl, rtt_msec);
+		data->rcvd_pckt_count++;
 		data->sequence++;
 		return;
 	}
-	packet_rcvd_error_check(&rcvd_pckt);
 }
 
-void packet_rcvd_error_check(t_icmp_pckt *rcvd_pckt) {
+static void print_ip_header_details(struct iphdr *ip_hdr) {
+    printf("Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src      Dst     Data\n");
+    printf("%1x  %1x  %02x %04x %04x  %1x %04x  %02x  %02x %04x %s  %s\n",
+           ip_hdr->version,
+           ip_hdr->ihl,
+           ip_hdr->tos,
+           ntohs(ip_hdr->tot_len),
+           ntohs(ip_hdr->id),
+           (ntohs(ip_hdr->frag_off) & 0xE000) >> 13,
+           ntohs(ip_hdr->frag_off) & 0x1FFF,
+           ip_hdr->ttl,
+           ip_hdr->protocol,
+           ntohs(ip_hdr->check),
+           inet_ntoa(*(struct in_addr *)&ip_hdr->saddr),
+           inet_ntoa(*(struct in_addr *)&ip_hdr->daddr));
+}
+
+static void print_icmp_details(struct icmphdr *icmp_hdr) {
+    printf("ICMP: type %d, code %d, size %lu, id 0x%04x, seq 0x%04x\n",
+           icmp_hdr->type,
+           icmp_hdr->code,
+           sizeof(struct icmphdr),
+           ntohs(icmp_hdr->un.echo.id),
+           ntohs(icmp_hdr->un.echo.sequence));
+}
+
+
+bool	packet_rcvd_error_check(struct iphdr *ip_hdr, t_icmp_pckt *rcvd_pckt, t_data *data) {
 
 	if (rcvd_pckt->hdr.type == 3) {
-		// printf("Destination Unreachable\n");
 		
 		switch (rcvd_pckt->hdr.code) {
-
 			case 0:
 				printf("Net Unreachable\n");
 				break;
 			case 1:
-				printf("Host Unreachable\n");
+				if (data->option.v) {
+					printf(
+							"92 bytes from (%s) : Destination Host Unreachable\n"
+							"IP Hdr Dump:", data->ip_addr);
+					print_ip_header_details(ip_hdr);
+					print_icmp_details(&rcvd_pckt->hdr);
+				}	
+				else
+					printf("Host Unreachable\n");
 				break;
 			case 2:
 				printf("Protocol Unreachable\n");
@@ -122,6 +156,7 @@ void packet_rcvd_error_check(t_icmp_pckt *rcvd_pckt) {
 			default:
 				break;
 		}
+		return (true);
 	}
 
 	if (rcvd_pckt->hdr.type == 5) {
@@ -142,6 +177,7 @@ void packet_rcvd_error_check(t_icmp_pckt *rcvd_pckt) {
 			default:
 				break;
 		}
+		
 	}
 
 	if (rcvd_pckt->hdr.type == 9 && rcvd_pckt->hdr.code == 0)
@@ -159,12 +195,13 @@ void packet_rcvd_error_check(t_icmp_pckt *rcvd_pckt) {
 		default:
 			break;
 		}
+		return (true);
+
 	}
 
 	if (rcvd_pckt->hdr.type == 12) {
 
 		switch (rcvd_pckt->hdr.code) {
-
 			case 0:
 				printf("The Pointer indicates the error\n");
 				break;
@@ -177,12 +214,13 @@ void packet_rcvd_error_check(t_icmp_pckt *rcvd_pckt) {
 			default:
 				break;	
 		}
+		return (true);
+
 	}
 
 	if (rcvd_pckt->hdr.type == 3) {
 
 		switch (rcvd_pckt->hdr.code) {
-
 			case 0:
 				printf("Bad SPI\n");
 				break;
@@ -204,5 +242,7 @@ void packet_rcvd_error_check(t_icmp_pckt *rcvd_pckt) {
 			default:
 				break;
 		}
+		return (true);
 	}
+	return (false);
 }
