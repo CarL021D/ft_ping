@@ -10,20 +10,6 @@ bool c_option_exec(t_data *data) {
 	return (false);
 }
 
-// void v_option_exec(t_data *data, char *buffer) {
-
-// 	(void)buffer;
-// 	static uint8_t i = 0;
-// 	// struct iphdr *ip_hdr = (struct iphdr *)buffer;
-// 	// struct icmphdr *icmp_hdr = (struct icmphdr *)(buffer + (ip_hdr->ihl * 4));
-	
-// 	if (!i) {
-// 		printf("PING %s (%s): %hu data bytes, id 0x%04x = %u\n", data.dns_name,
-// 			data->ip_addr, PING_PKT_SIZE, getpid(), getpid());
-// 		i++;
-// 	}
-// }
-
 void help_option_exec() {
 
 	printf(
