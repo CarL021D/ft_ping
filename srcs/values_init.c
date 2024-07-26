@@ -50,8 +50,6 @@ void init_sock_addr(struct sockaddr_in *addr_con, char *ip_addr) {
 	addr_con->sin_family = AF_INET;
 	addr_con->sin_port = htons(0);
 	addr_con->sin_addr.s_addr = inet_addr(ip_addr);
-	printf("(%s)\n", ip_addr);
-
 }
 
 void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data) {

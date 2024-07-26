@@ -94,6 +94,9 @@ static void print_icmp_details(struct icmphdr *icmp_hdr) {
 
 bool	packet_rcvd_error_check(struct iphdr *ip_hdr, t_icmp_pckt *rcvd_pckt, t_data *data) {
 
+	if (data->option.q)
+		return (true);
+
 	if (rcvd_pckt->hdr.type == 3) {
 		
 		switch (rcvd_pckt->hdr.code) {
