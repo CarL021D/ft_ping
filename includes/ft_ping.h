@@ -40,7 +40,6 @@ typedef struct	s_data {
 	double			sleep_time;
 	char			*dns_name;
 	char 			*ip_addr;
-	uint16_t   		icmp_pckt_size;
 	uint16_t		sent_pckt_count;
 	uint16_t		rcvd_pckt_count;
 	uint16_t    	sequence;

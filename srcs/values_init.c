@@ -32,7 +32,6 @@ void	init_data(t_data *data, int ac, char **av) {
 	else
 		data->sleep_time = 1;		
 	data->dns_name = av[ac - 1];
-	data->icmp_pckt_size =  sizeof(struct icmphdr) + data->payload_size;
 	data->sent_pckt_count = 0;
 	data->rcvd_pckt_count = 0;
 	data->sequence = 0;
