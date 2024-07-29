@@ -74,7 +74,6 @@ long double		calculate_stddev(t_data *data);
 void			print_packet_content(t_data *data, t_icmp_pckt *pckt);
 
 bool	c_option_exec(t_data *data);
-// void	v_option_exec(t_data *data, char *buffer);
 void	help_option_exec();
 
 void	arg_error_exit_program();
