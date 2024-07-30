@@ -66,7 +66,7 @@ bool	compare_pckts_addr(t_data *data, char *buffer);
 void	print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, long double rtt_msec);
 bool	packet_rcvd_error_check(struct iphdr *ip_hdr, t_icmp_pckt *rcvd_pckt, t_data *data);
 
-unsigned short 	checksum(void *b, int len);   
+unsigned short 	checksum(void *b, int len);
 char			*resolve_hostname_to_ip(const char *hostname);
 long double		get_ping_duration(struct timespec *time_start, struct timespec *time_end);
 long double		calculate_average(t_data *data);

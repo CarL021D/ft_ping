@@ -1,7 +1,7 @@
 NAME = ft_ping
 
 SRCS = srcs/ft_ping.c			    \
-       srcs/values_init.c	        \
+       srcs/init.c	        \
        srcs/packet_managment.c      \
        srcs/error_handler.c	        \
        srcs/cmd_options.c           \
