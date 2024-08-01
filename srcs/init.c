@@ -38,15 +38,20 @@ void	init_data(t_data *data, int ac, char **av) {
 	data->rtt_arr = malloc(data->sequence * sizeof(long double));
 	if (!data->rtt_arr) {
 		close(data->sockfd);
-		fprintf(stderr, "\n");
+		fprintf(stderr, "malloc error\n");
 		exit(EXIT_FAILURE);
 	}
 }
 
-void init_sock_addr(struct sockaddr_in *addr_con, char *ip_addr) {    
+void init_sock_addr(t_data *data, struct sockaddr_in *addr_con, char *ip_addr) {    
 	
 	memset(addr_con, 0, sizeof(struct sockaddr_in));
 	addr_con->sin_family = AF_INET;
+	if (inet_pton(AF_INET, data->ip_addr, &addr_con->sin_addr) <= 0) {
+        fprintf(stderr, "inet_pton error for %s\n", data->ip_addr);
+        exit(EXIT_FAILURE);
+    }
+
 	addr_con->sin_port = htons(0);
 	addr_con->sin_addr.s_addr = inet_addr(ip_addr);
 }

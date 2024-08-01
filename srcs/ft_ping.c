@@ -83,7 +83,7 @@ void update_data(t_data *data, long double rtt_msec) {
 
 static bool wait_response(t_data *data)
 {
-	 struct timeval tv = {0, 100000};
+	struct timeval tv = {0, 100000};
 
 	fd_set readfds;
 	FD_ZERO(&readfds);
@@ -114,7 +114,7 @@ void ping(t_data *data, struct sockaddr_in *addr_con) {
 		error_exit_program(data, "sendto error");
 	data->sent_pckt_count++;
 
-	if (!wait_response(data))
+	if (!data->option.f && !wait_response(data))
 		return;
 
 	memset(buffer, 0, sizeof(buffer));
@@ -138,7 +138,7 @@ int main(int ac, char **av) {
 	signal(SIGINT, sig_handler);
 	check_args_count(ac, av);
 	init_data(&data, ac, av);
-	init_sock_addr(&addr_con, data.ip_addr);
+	init_sock_addr(&data, &addr_con, data.ip_addr);
 	print_ping_first_output(&data);
 
 	while (!c_sig && !c_option_exec(&data)) {

@@ -56,7 +56,7 @@ typedef struct	s_icmp_pckt {
 }			t_icmp_pckt;
 
 
-void	init_sock_addr(struct sockaddr_in *addr_con, char *ip_addr);
+void	init_sock_addr(t_data *data, struct sockaddr_in *addr_con, char *ip_addr);
 void	init_data(t_data *data, int ac, char **av);
 void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data);
 void 	cmd_options_init(t_data *data, int ac, char **av);
