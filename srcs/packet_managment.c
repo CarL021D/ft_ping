@@ -32,7 +32,6 @@ bool compare_pckts_addr(t_data *data, char *buffer) {
 
 	if (!strcmp(src_ip, dst_ip) && icmp_hdr->type == 8)
 		return false;
-
 	return true;
 }
 
@@ -46,6 +45,7 @@ void print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, l
 	memcpy(rcvd_pckt.payload, buffer + (ip_hdr->ihl * 4) + sizeof(struct icmphdr), PAYLOAD_SIZE);
 
 	if (data->option.f) {
+		data->rcvd_pckt_count++;
 		data->sequence++;
 		return;
 	}
@@ -55,6 +55,7 @@ void print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, l
 		fprintf(stderr, "payload got corrupted\n");
 		return;
 	}
+
 	if (icmp_hdr->type == ICMP_ECHOREPLY && icmp_hdr->un.echo.id == getpid()) {
 		if (!data->option.q)
 			printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3Lf ms\n",
@@ -62,6 +63,8 @@ void print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, l
 		data->rcvd_pckt_count++;
 		data->sequence++;
 		return;
+
+		(void)pckt;
 	}
 }
 

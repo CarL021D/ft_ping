@@ -114,7 +114,7 @@ void ping(t_data *data, struct sockaddr_in *addr_con) {
 		error_exit_program(data, "sendto error");
 	data->sent_pckt_count++;
 
-	if (!data->option.f && !wait_response(data))
+	if (!data->option.f && !data->option.l && !wait_response(data))
 		return;
 
 	memset(buffer, 0, sizeof(buffer));

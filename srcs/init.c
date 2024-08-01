@@ -62,7 +62,7 @@ void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data) {
 	pckt->hdr.type = ICMP_ECHO;
 	pckt->hdr.code = 0;
 	pckt->hdr.un.echo.id = getpid();
-	pckt->hdr.checksum = 0;
+	// pckt->hdr.checksum = 0;
 	pckt->hdr.un.echo.sequence = data->sequence;
 
 	for (uint16_t i = 0; i < data->payload_size - 1; i++)
