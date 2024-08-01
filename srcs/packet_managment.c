@@ -63,8 +63,6 @@ void print_rcvd_packet_response(t_data *data, char *buffer, t_icmp_pckt *pckt, l
 		data->rcvd_pckt_count++;
 		data->sequence++;
 		return;
-
-		(void)pckt;
 	}
 }
 

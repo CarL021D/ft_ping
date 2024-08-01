@@ -68,17 +68,14 @@ void update_data(t_data *data, long double rtt_msec) {
 
 	if (data->option.l && (data->sent_pckt_count >= data->option.l))
 		data->sleep_time = 1;
-
+	
 	if (data->option.v == 2)
 		return ;
 	long double *new_arr = realloc(data->rtt_arr, (data->sequence) * sizeof(long double));
 	if (!new_arr)
 		error_exit_program(data, "failed to reallocate memory");
-
 	data->rtt_arr = new_arr;
 	data->rtt_arr[data->sequence - 1] = rtt_msec;
-
-	(void)rtt_msec;
 }
 
 static bool wait_response(t_data *data)
@@ -145,7 +142,6 @@ int main(int ac, char **av) {
 		ping(&data, &addr_con);
 		usleep(data.sleep_time * 1000000);
 	}
-
 	ping_exit_output(&data);
 	free(data.rtt_arr);
 	close(data.sockfd);

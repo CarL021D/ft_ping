@@ -51,7 +51,6 @@ void init_sock_addr(t_data *data, struct sockaddr_in *addr_con, char *ip_addr) {
         fprintf(stderr, "inet_pton error for %s\n", data->ip_addr);
         exit(EXIT_FAILURE);
     }
-
 	addr_con->sin_port = htons(0);
 	addr_con->sin_addr.s_addr = inet_addr(ip_addr);
 }
@@ -62,7 +61,6 @@ void	init_icmp_pckt(t_icmp_pckt *pckt, t_data *data) {
 	pckt->hdr.type = ICMP_ECHO;
 	pckt->hdr.code = 0;
 	pckt->hdr.un.echo.id = getpid();
-	// pckt->hdr.checksum = 0;
 	pckt->hdr.un.echo.sequence = data->sequence;
 
 	for (uint16_t i = 0; i < data->payload_size - 1; i++)
