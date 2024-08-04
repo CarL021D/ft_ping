@@ -27,7 +27,6 @@ void help_option_exec() {
 		"  -?, --help                 give this help list\n"
 		"Mandatory or optional arguments to long options are also mandatory or optional\n"
 		"for any corresponding short options.\n\n"
-		"Options marked with (root only) are available only to superuser.\n\n"
-		"Report bugs to <bug-inetutils@gnu.org>\n"
+		"Options marked with (root only) are available only to superuser.\n"
 	);
 }
